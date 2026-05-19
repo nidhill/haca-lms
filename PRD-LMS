@@ -1,0 +1,69 @@
+JUNIOR DEV BUILD PLAN: HACA LMS
+Role: Frontend Developer (React 19, Tailwind CSS, shadcn/ui) Goal: Build the student-facing LMS interface that connects to the existing SHO App backend.
+🔴 Golden Rules for the Junior Dev
+Never build a backend API for this. The backend is already handled by the SHO server. You will only write frontend code and make Axios calls.
+Copy the UI Vibe: Use the exact same color scheme, fonts, and shadcn/ui components as the existing SHO app so they look like brother and sister apps.
+Always send the Token: Every API request must include the JWT token in the header (Authorization: Bearer <token>), otherwise the server will block you.
+Assume Mobile First: 80% of students will watch courses on their phones. Ensure everything is fully responsive.
+
+🛠️ Phase 1: Foundation & Authentication (Week 1)
+Objective: Get the app running and let the student log in securely.
+Task 1: Setup the Project
+Initialize a new Vite + React 19 project.
+Install Tailwind CSS v3 and setup shadcn/ui.
+Set up react-router-dom v7.
+Task 2: API Client Setup
+Create an api.js file using Axios.
+Set the baseURL to the SHO backend URL (e.g., http://localhost:5001/api/lms for dev).
+Add an Axios interceptor to automatically attach the JWT from localStorage.
+Task 3: Login Page
+Build a simple login form (Email & Password).
+Hit the /api/auth/login endpoint.
+Save the returned JWT token to localStorage and redirect the user to the Dashboard.
+Task 4: Main Layout
+Build the App Shell: A responsive Sidebar (collapsible on mobile) and a Top Navbar.
+Sidebar Links: Dashboard, My Courses, Assignments, Profile.
+📊 Phase 2: Student Dashboard (Week 2)
+Objective: Show the student their current status using read-only data from the SHO database.
+Task 1: Dashboard UI Components
+Build "Metric Cards" (shadcn Card) for: Attendance %, Progress %, Exams Passed.
+Task 2: Display Announcements
+Fetch and map an array of announcements. Show pinned ones at the top.
+Task 3: Attendance Calendar widget
+Fetch attendance data.
+Use a simple calendar component or a list view to show dates with color codes: 🟢 Present, 🔴 Absent, 🟡 Late.
+Task 4: Exam Marks Table
+Fetch exam marks and display them in a clean table.
+🎬 Phase 3: The Core Learning Experience (Weeks 3-4)
+Objective: Let the student watch videos and read PDFs.
+Task 1: "My Courses" Page
+Fetch the courses linked to the student's batch. Display as a grid of Cards with thumbnails and progress bars.
+Task 2: Course Detail / Module View
+Create a UI showing the list of Modules.
+Inside each Module, list the Lessons.
+Logic Rule: If a Module is locked, disable the click and show a lock icon 🔒.
+Task 3: The Video Player Component
+Install react-player.
+Create a page where the video plays.
+Crucial Logic: Send a request to /api/lms/progress/mark-complete when the video reaches 80% or when the user clicks a "Mark as Complete" button.
+Task 4: PDF & Text Viewer
+For lessons that are PDFs, embed them using react-pdf or simply an <iframe>.
+📝 Phase 4: Quizzes & Assignments (Weeks 5-6)
+Objective: Allow students to take tests and upload files.
+Task 1: Quiz UI
+Fetch the quiz JSON.
+Show one question at a time or all at once (check with PM).
+Track the selected options in a React state object.
+On submit, POST the answers to the backend. Show the score screen immediately after.
+Task 2: Assignment Submission
+Build an upload form for assignments.
+Add frontend validation: File size must be < 50MB. Allowed types: .pdf, .zip, .png.
+Show a progress bar during upload (crucial for UX).
+Once uploaded, change the assignment status badge to "Submitted - Pending Grade".
+
+🛑 Definition of Done (Checklist before deploying)
+[ ] Have I tested the UI on an iPhone and an Android phone screen size?
+[ ] Does the UI gracefully handle loading states? (Show skeletons or spinners while data is fetching).
+[ ] Did I handle API errors properly? (If the backend returns a 500 error, show a toast notification saying "Something went wrong", don't let the app crash).
+[ ] If I delete the token from localStorage and refresh, does the app kick me back to the login screen?
+

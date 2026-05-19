@@ -1,0 +1,482 @@
+# SHO App — Student Happiness Officer Platform
+
+A full-stack education management platform built for HACA (Happily A Career Academy). It gives admins, mentors, SHOs (Student Happiness Officers), and academic leads a single workspace to manage batches, students, attendance, assignments, feedback, and curriculum planning.
+
+---
+
+## Table of Contents
+
+- [Overview](#overview)
+- [Tech Stack](#tech-stack)
+- [Project Structure](#project-structure)
+- [User Roles & Permissions](#user-roles--permissions)
+- [Features](#features)
+- [Data Models](#data-models)
+- [API Reference](#api-reference)
+- [Background Jobs](#background-jobs)
+- [Getting Started](#getting-started)
+- [Environment Variables](#environment-variables)
+- [Deployment](#deployment)
+
+---
+
+## Overview
+
+SHO App is a role-gated management system for a vocational training academy. It handles the full student lifecycle — from enrolment and daily attendance to assignment submission, performance feedback, curriculum tracking, and automated reporting.
+
+**Two databases run in parallel:**
+- **MongoDB** (primary) — stores all transactional data (users, batches, students, attendance, etc.)
+- **Supabase (PostgreSQL)** — mirrors student/batch data synced hourly via a background cron job
+
+---
+
+## Tech Stack
+
+### Frontend (`/app`)
+
+| Layer | Technology |
+|---|---|
+| Framework | React 19 + TypeScript |
+| Build tool | Vite 7 |
+| Routing | React Router DOM 7 |
+| Styling | Tailwind CSS v3 + shadcn/ui |
+| Charts | Recharts |
+| Forms | React Hook Form + Zod |
+| HTTP | Axios |
+| Notifications | Sonner |
+| Icons | Lucide React |
+
+### Backend (`/server`)
+
+| Layer | Technology |
+|---|---|
+| Runtime | Node.js 20 |
+| Framework | Express 4 |
+| Primary DB | MongoDB via Mongoose 8 |
+| Secondary DB | Supabase (PostgreSQL) |
+| Auth | JWT (jsonwebtoken) + bcryptjs |
+| AI Chat | Google Gemini + Groq SDK |
+| Email | Resend |
+| Scheduling | node-cron |
+| File upload | Multer |
+| CSV parsing | csv-parse |
+
+---
+
+## Project Structure
+
+```
+.
+├── app/                        # React frontend (Vite)
+│   ├── public/                 # Static assets (logo, favicon)
+│   ├── src/
+│   │   ├── components/
+│   │   │   ├── ui/             # 50+ shadcn/ui primitives
+│   │   │   ├── ChatBot.tsx     # AI assistant (Gemini/Groq)
+│   │   │   ├── Layout.tsx      # App shell with sidebar
+│   │   │   ├── Sidebar.tsx     # Role-aware navigation
+│   │   │   └── ProtectedRoute.tsx
+│   │   ├── contexts/
+│   │   │   ├── AuthContext.tsx  # JWT auth state
+│   │   │   └── ThemeContext.tsx # Light/dark theme
+│   │   ├── pages/              # One file per route
+│   │   ├── services/
+│   │   │   └── api.ts          # Axios API client
+│   │   └── types/
+│   │       └── index.ts        # Shared TypeScript interfaces
+│   ├── vite.config.ts          # Dev server + build config
+│   └── vercel.json             # Vercel SPA rewrite rules
+│
+└── server/                     # Express backend
+    ├── middleware/
+    │   ├── auth.js             # JWT verifyToken middleware
+    │   └── auditLogger.js      # Auto-logs all write operations
+    ├── models/                 # Mongoose schemas
+    │   ├── User.js
+    │   ├── Batch.js
+    │   ├── Student.js
+    │   ├── Attendance.js
+    │   ├── Assignment.js
+    │   ├── Feedback.js
+    │   ├── ClassLog.js
+    │   ├── CurriculumTemplate.js
+    │   ├── Notification.js
+    │   ├── ModuleExam.js
+    │   ├── Project.js
+    │   ├── AutoReport.js
+    │   ├── AuditLog.js
+    │   └── ...
+    ├── routes/                 # Express routers (one per domain)
+    ├── services/
+    │   ├── email.js            # Transactional email via Resend
+    │   └── reportGenerator.js  # Auto-report builder
+    ├── config/
+    │   └── supabase.js         # Supabase client init
+    └── server.js               # Entry point, cron jobs
+```
+
+---
+
+## User Roles & Permissions
+
+The system has five role groups. All routes are gated by `ProtectedRoute` on the frontend and `verifyToken` on the backend.
+
+| Feature | Admin | CEO/Leadership | Academic/SSHO/PL | SHO | Mentor |
+|---|:---:|:---:|:---:|:---:|:---:|
+| Dashboard | ✅ | ✅ | ✅ | ✅ | ✅ |
+| Batches | ✅ | ✅ | ✅ | ✅ | ✅ |
+| Students | ✅ | ✅ | ✅ | ✅ | ✅ |
+| Assignments | ✅ | ✅ | ✅ | ✅ | ✅ |
+| Feedback | ✅ | ✅ | ✅ | ✅ | ✅ |
+| Analytics | ✅ | ✅ | ✅ | ✅ | ✅ |
+| Class Planner | ✅ | ✅ | ✅ | ✅ | ✅ |
+| Settings | ✅ | ✅ | ✅ | ✅ | ✅ |
+| Schools | ✅ | ✅ | ✅ (assigned only) | ❌ | ✅ |
+| Notifications | ✅ | ✅ | ✅ | ✅ | ✅ (inbox only) |
+| **Attendance** | ❌ | ❌ | ❌ | ✅ | ❌ |
+| Users | ✅ | ✅ | ❌ | ❌ | ❌ |
+| Audit Logs | ✅ | ✅ | ❌ | ❌ | ❌ |
+| Auto Reports | ✅ | ✅ | ✅ | ❌ | ❌ |
+| Import Students | ✅ | ✅ | ✅ | ❌ | ❌ |
+| Support Inbox | ✅ | ✅ | ❌ | ❌ | ❌ |
+| Academic Lead Mgmt | ✅ | ❌ | ❌ | ❌ | ❌ |
+
+> Attendance is **exclusively** for SHO roles. Admin and leadership use Analytics for aggregate attendance data.
+
+---
+
+## Features
+
+### Dashboard
+Role-aware overview showing key metrics: active batches, total students, average attendance, assignment completion rate. Mentors and SHOs see only their assigned batches. Includes a Class Planner progress widget showing curriculum completion per batch.
+
+### Batch Management
+Create and manage training batches with school assignment, SHO/SSHO/Mentor staff assignment, start/end dates, mode (Online/Offline), capacity tracking, and course type. Batch detail page shows all students, attendance logs, assignments, and class planner sessions.
+
+### Student Management
+Full student profiles including personal details, parent/guardian contact, career goals, qualification, and status (`active`, `placed`, `interview_required`, `revoked`). Includes co-curriculum activity tracking (presentations, mock interviews, personality development) and performance summaries. Import students in bulk via CSV or sync from Supabase.
+
+### Attendance
+SHO-exclusive feature. Mark daily attendance for entire batches with per-student status (`present`, `absent`, `late`, `excused`) and remarks. Attendance analytics show trends, percentage by batch, and cross-batch comparisons.
+
+### Class Planner & Curriculum
+Two-layer curriculum system:
+1. **Curriculum Templates** — reusable day-by-day course blueprints (e.g. "Data Analytics 60-day plan") stored per course type
+2. **Class Logs** — batch-specific session instances with status (`planned`, `completed`, `skipped`), conducted date, and notes
+
+Import curriculum directly from a Google Sheets URL. The backend fetches the sheet, parses CSV, auto-detects column names via fuzzy matching (handles "Topic", "Class Name", "What", "Subject", etc.), and normalises session types. Admins and mentors can also edit session details inline.
+
+Session types supported: `regular`, `test`, `project`, `hr`, `placement`, `practice`.
+
+### Assignments & Projects
+Create assignments for batches or individual students with due dates, total marks, and file attachments. Students submit work and get graded with score and feedback. Separate Projects module for capstone/group projects.
+
+### Feedback
+Multi-type feedback system:
+- **Student feedback** — per-student ratings (overall, communication, punctuality, understanding, participation) with strengths and improvement areas
+- **Session feedback** — topic/date-linked session evaluations
+- **Batch feedback** — cohort-level observations
+- **Google Form links** — embed external feedback forms
+
+### Module Exams
+Track module-level exam results per student with scores, grade, and remarks.
+
+### Notifications
+Send targeted notifications to all students, specific batches, or individual students. Priority levels: low, medium, high, urgent. Supports file attachments. Role-based inbox for staff.
+
+### Analytics
+Visual dashboards with charts (Recharts) showing:
+- Attendance trends over time
+- Assignment completion rates by batch
+- Feedback score distributions
+- Student status breakdown (active/placed/interview required)
+- Cross-batch performance comparisons
+
+### Reports & Auto Reports
+Generate on-demand reports or schedule automatic reports:
+- **Weekly** — auto-sent every Monday at 8:00 AM
+- **Monthly** — auto-sent on 1st of every month at 8:00 AM
+- Reports delivered via email using configurable templates (Resend)
+
+### Audit Logs
+Every write operation (POST/PUT/PATCH/DELETE) through `/api/*` is automatically logged with: user ID, name, role, action, target resource, IP address, device/user-agent, and timestamp. Viewable by admin and leadership roles only.
+
+### AI ChatBot
+Floating assistant powered by Google Gemini and/or Groq. Context-aware responses about the platform. Usage tracked per user via `ChatUsage` model.
+
+### Support Inbox
+Students and staff can submit support tickets (`ContactAdmin` public page). Admins view and manage tickets in the Support Inbox.
+
+### System Storage & Sync
+- View MongoDB collection sizes and document counts
+- Manual trigger for Supabase → MongoDB data sync
+- Automatic sync on startup + every hour via cron
+
+---
+
+## Data Models
+
+### User
+```
+name, email, password (bcrypt), role, phone,
+assignedBatches[], assignedSchools[]
+```
+
+### Batch
+```
+name, code (unique), school (ref), assignedSHO (ref), assignedSSHO (ref),
+assignedMentors[] (ref), startDate, endDate, status, mode, courseType,
+capacity, isFull, totalStudents, averageAttendance, averageFeedbackScore,
+assignmentCompletionRate, classSchedule[]
+```
+
+### Student
+```
+name, email, age, qualification, address, place, mobileNumber,
+parentGuardianNumber, careerDreamsGoals, batch (ref), school (ref),
+status, coCurriculum { presentationSessions, communicationSessions,
+personalityDevelopment, mockInterviews, reviews }
+```
+
+### Attendance
+```
+batch (ref), date, students[] { student (ref), status, remarks },
+markedBy (ref), totalPresent, totalAbsent, attendancePercentage
+```
+
+### ClassLog (Curriculum session instance)
+```
+batch (ref), curriculumDay, module, topic, sessionType, duration,
+status (planned/completed/skipped), conductedDate, conductedBy (ref),
+notes, isActive
+```
+
+### CurriculumTemplate (Reusable blueprint)
+```
+courseType, day, module, topic, sessionType, duration, notes, isActive
+```
+
+### Assignment
+```
+title, description, batch (ref), student (ref), assignedBy (ref),
+dueDate, attachments[], submissions[] { student, submittedAt, status,
+score, feedback, remarks }, totalMarks, status
+```
+
+### AuditLog
+```
+userId, userName, userRole, action (method + path), target, details,
+ip, device, timestamp
+```
+
+---
+
+## API Reference
+
+All routes are prefixed with `/api` and require a `Bearer <JWT>` token header unless noted.
+
+### Auth
+| Method | Endpoint | Description |
+|---|---|---|
+| POST | `/api/auth/login` | Login, returns JWT |
+| POST | `/api/auth/signup` | Create account |
+| POST | `/api/auth/reset-password` | Request password reset |
+| POST | `/api/auth/reset-password/:token` | Set new password |
+
+### Users
+| Method | Endpoint | Description |
+|---|---|---|
+| GET | `/api/users` | List all users (admin/leadership) |
+| POST | `/api/users` | Create user |
+| PATCH | `/api/users/:id` | Update user |
+| DELETE | `/api/users/:id` | Delete user |
+
+### Schools & Batches
+| Method | Endpoint | Description |
+|---|---|---|
+| GET | `/api/schools` | List schools |
+| POST | `/api/batches` | Create batch |
+| GET | `/api/batches/:id` | Batch details |
+| PATCH | `/api/batches/:id` | Update batch |
+
+### Students
+| Method | Endpoint | Description |
+|---|---|---|
+| GET | `/api/students` | List students (filtered by role) |
+| POST | `/api/students` | Add student |
+| GET | `/api/students/:id` | Student profile |
+| PATCH | `/api/students/:id` | Update student |
+| POST | `/api/import-students` | Bulk import via CSV |
+
+### Attendance
+| Method | Endpoint | Description |
+|---|---|---|
+| GET | `/api/attendance` | Get attendance logs |
+| POST | `/api/attendance` | Mark attendance |
+| PATCH | `/api/attendance/:id` | Update attendance record |
+
+### Curriculum / Class Planner
+| Method | Endpoint | Description |
+|---|---|---|
+| GET | `/api/curriculum/types` | List course types |
+| GET | `/api/curriculum/batch/:batchId` | Get class logs for a batch |
+| POST | `/api/curriculum/batch/:batchId/init` | Init sessions from template |
+| POST | `/api/curriculum/batch/:batchId/import` | Bulk import from sheet rows |
+| POST | `/api/curriculum/preview-sheet` | Preview Google Sheet (no DB write) |
+| PATCH | `/api/curriculum/log/:logId` | Update session status/details |
+| DELETE | `/api/curriculum/log/:logId` | Delete single session |
+| DELETE | `/api/curriculum/batch/:batchId/logs` | Delete all sessions for batch |
+| GET | `/api/curriculum/:courseType` | Get full curriculum template |
+
+### Assignments, Feedback, Notifications
+Standard REST endpoints under `/api/assignments`, `/api/feedback`, `/api/notifications`.
+
+### Reports & Audit Logs
+| Method | Endpoint | Description |
+|---|---|---|
+| GET | `/api/reports` | Generate/list reports |
+| GET | `/api/auto-reports` | Auto report configs |
+| GET | `/api/audit-logs` | Audit log history |
+
+### System
+| Method | Endpoint | Description |
+|---|---|---|
+| GET | `/api/health` | Server + DB status check |
+| GET | `/api/system` | Storage/collection stats |
+| POST | `/api/sync` | Trigger Supabase → MongoDB sync |
+
+---
+
+## Background Jobs
+
+All scheduled tasks run inside the server process via `node-cron`:
+
+| Job | Schedule | Description |
+|---|---|---|
+| Supabase → MongoDB sync | Startup + every hour (`0 * * * *`) | Mirrors student and batch data from Supabase |
+| Weekly auto-reports | Every Monday 8:00 AM (`0 8 * * 1`) | Generates and emails weekly reports |
+| Monthly auto-reports | 1st of month 8:00 AM (`0 8 1 * *`) | Generates and emails monthly reports |
+| Batch start reminders | Daily 9:00 AM IST / 3:30 AM UTC (`30 3 * * *`) | Emails SHO/SSHO/mentors 5 days before a batch starts |
+
+---
+
+## Getting Started
+
+### Prerequisites
+
+- Node.js 20+
+- MongoDB running locally (or Atlas connection string)
+- Supabase project (optional for sync features)
+
+### 1. Clone the repository
+
+```bash
+git clone <repo-url>
+cd sho-app
+```
+
+### 2. Start the backend
+
+```bash
+cd server
+npm install
+cp .env.example .env   # fill in your values (see below)
+npm run dev            # node --watch server.js on port 5001
+```
+
+### 3. Start the frontend
+
+```bash
+cd app
+npm install
+npm run dev            # Vite dev server on port 3000
+```
+
+The Vite dev server proxies `/api/*` requests to `http://localhost:5001`, so no CORS configuration is needed during development.
+
+### 4. Seed demo data (optional)
+
+```bash
+cd server
+node seed-demo.js      # creates sample schools, batches, students, users
+```
+
+---
+
+## Environment Variables
+
+### Server (`server/.env`)
+
+```env
+# MongoDB
+MONGODB_URI=mongodb://localhost:27017/sho_app
+# or Atlas: mongodb+srv://<user>:<pass>@cluster.mongodb.net/sho_app
+
+# JWT
+JWT_SECRET=your_jwt_secret_here
+
+# Supabase (for student/batch sync)
+SUPABASE_URL=https://xxxx.supabase.co
+SUPABASE_SERVICE_KEY=your_service_role_key
+
+# Email (Resend)
+RESEND_API_KEY=re_xxxxxxxxxxxx
+FROM_EMAIL=noreply@yourdomain.com
+
+# AI Chat
+GEMINI_API_KEY=your_google_gemini_key
+GROQ_API_KEY=your_groq_key
+
+# Frontend URL (for CORS)
+FRONTEND_URL=https://your-app.vercel.app
+
+# Server port
+PORT=5001
+```
+
+### Frontend (`app/.env`)
+
+```env
+# Set this if deploying to a custom backend URL
+# During dev, Vite proxies /api → localhost:5001 automatically
+VITE_API_URL=https://your-backend.onrender.com
+```
+
+---
+
+## Deployment
+
+### Frontend — Vercel
+
+The [app/vercel.json](app/vercel.json) rewrites all routes to `index.html` for SPA routing. Connect the `app/` directory as the Vercel project root.
+
+```bash
+cd app
+npm run build          # outputs to app/dist/
+```
+
+Vite splits vendor code into separate cached chunks (Recharts, Radix UI, Lucide, PDF.js) for optimal browser caching.
+
+### Backend — Render / Railway / VPS
+
+```bash
+cd server
+npm start              # node server.js
+```
+
+Set `MONGODB_URI` to your Atlas connection string and `FRONTEND_URL` to your Vercel deployment URL in the hosting platform's environment variables.
+
+CORS is configured to allow:
+- `localhost:3000`, `localhost:5173` (dev)
+- Any `*.vercel.app` domain (Vercel previews)
+- Any `*.ngrok-free.app` or `*.ngrok.io` domain (local tunnels)
+- The explicit `FRONTEND_URL` env var
+
+---
+
+## Development Notes
+
+- **API client** — all frontend API calls go through [app/src/services/api.ts](app/src/services/api.ts) which attaches the JWT from localStorage automatically
+- **Lazy loading** — every page component is code-split via `React.lazy()`. First visit downloads ~50-100 KB per page; subsequent visits are instant from the browser cache
+- **Audit trail** — the `auditLogger` middleware runs after every `POST/PUT/PATCH/DELETE` on `/api/*` and writes a log entry automatically — no manual logging required in route handlers
+- **Google Sheets import** — tries `gviz` CSV URL first (works for "Anyone with link" shares), falls back to `export?format=csv`. Column names are fuzzy-matched so sheets with non-standard headers still parse correctly

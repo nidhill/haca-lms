@@ -1,0 +1,330 @@
+HACA LMS — Project Plan & Cost Report
+Version 1.0 · May 2026 · 1,000 Students · 
+Students
+1,000 active enrolled
+Build timeline
+14 weeks across 5 phases
+Infra cost
+₹8,900/month (recommended setup)
+Cost per student
+₹9/month
+
+
+1. Executive Summary
+HACA currently operates the SHO App — an internal staff management platform used by administrators, school heads, mentors, and academic leads to manage student batches, attendance, module exams, assignments, and class planning across multiple schools.
+The HACA LMS is a student-facing Learning Management System that integrates tightly with the existing SHO App. It allows students to access course content, submit assignments, take quizzes, track their progress, and view attendance and exam results — all driven by data already managed in the SHO App.
+Both systems share a common MongoDB database and JWT authentication layer, making data sync seamless without a separate API bridge. This significantly reduces build complexity and ongoing infrastructure cost.
+
+2. LMS Scope
+What the LMS is:
+Gives each student a personal login and dashboard
+Shows enrolled courses mapped from SHO App batches
+Delivers course content — video, PDF, text, external links
+Lets students take quizzes and submit assignments
+Displays attendance and exam results pulled from SHO App data
+Tracks progress through each course with visual indicators
+Issues certificates with unique IDs and QR codes on completion
+What the LMS is NOT:
+Does not replace the SHO App for staff operations
+Does not manage schools, batches, or user roles (stays in SHO App)
+Does not mark attendance (SHO staff continue to do that)
+Mentors and admins continue using SHO App — LMS is purely student-facing
+
+3. Architecture
+Both systems share a single Express API backend and MongoDB Atlas cluster. Frontend applications are deployed separately on Vercel while the backend runs on Render.
+Component
+SHO App (Staff)
+HACA LMS (Students)
+Frontend
+React 19 + Vite + Tailwind
+React 19 + Vite + Tailwind
+UI Library
+shadcn/ui
+shadcn/ui
+Backend
+Express + Node.js (shared)
+Same server, new routes
+Database
+MongoDB Atlas (shared)
+Same cluster, new collections
+Auth
+JWT (custom)
+Same JWT, student role added
+Hosting
+Vercel + Render
+New Vercel project, same Render
+File Storage
+None currently
+Cloudflare R2 (recommended)
+
+Shared — no duplication needed: JWT auth, User model, Batch/School/Student/Attendance/ModuleExam/Assignment models, Express server, email service.
+New — LMS-only additions: Course model, Lesson model, Quiz/Question/QuizAttempt models, AssignmentSubmission model, StudentProgress model, Certificate model, Announcement and Discussion models, Cloudflare R2 bucket.
+
+4. LMS Features — Detailed Specification
+Feature
+Specification
+Student auth
+Email + password login, 30-day JWT, first-login password reset, forgot password email flow. Admin creates account → auto welcome email.
+Dashboard
+Progress %, attendance %, exams passed, streak. Continue-learning shortcut, upcoming deadlines, pinned announcements.
+Course view
+Course › Module › Lesson hierarchy. Sequential module unlocking (100% required). Visual indicators: done / in-progress / locked.
+Video player
+react-player. Resume playback, 0.5x–2x speed, subtitles (SRT). Progress saved every 10 seconds. Auto-complete at 80% watch threshold.
+Quiz engine
+MCQ, True/False (auto-graded), Short Answer (mentor review). Optional timer, configurable attempts, explanations after submission.
+Assignments
+PDF/DOCX/ZIP/image upload up to 50 MB. Deadline enforcement, late flag, status: pending → submitted → graded. Mentor grades in SHO App.
+Attendance
+Monthly calendar, colour-coded status (Present/Absent/Late/Excused). Read-only; pulled from SHO App Attendance collection.
+Exam results
+All published module exams, marks, pass/fail, class rank, pass rate, historical trend chart.
+Certificates
+Auto-generated PDF on 100% completion. Unique ID + QR code, public verification URL, downloadable from dashboard.
+Discussions
+Per-lesson comment threads, mentor "Best Answer" flag, student-to-student replies.
+Announcements
+Mentors post in SHO App, displayed in LMS. Pinned items first. Push notification + email on new post.
+Live classes
+Class Planner sessions in LMS calendar. Join link shown 15 min before. Post-session recording link. Student RSVP.
+
+
+5. SHO App Changes Required
+Addition
+Type
+Details
+Student login
+New
+Add role: 'student' to User model. Auto-create user when admin adds student to batch.
+Course Builder
+New admin section
+Admin/mentor creates modules, uploads content to R2, builds quizzes, publishes. Linked to a batch.
+Assignment grading UI
+Enhancement
+View submission file, enter grade + feedback. Syncs to LMS automatically.
+Announcement manager
+New
+Rich-text post to a batch, pin/unpin, triggers push notification to all batch students.
+LMS analytics panel
+New admin section
+Per-batch: avg progress, quiz pass rates, submission rates. Per-student full report. PDF export.
+Webhook triggers
+New
+Absent, exam published, assignment graded, new lesson — each triggers student notification.
+
+
+6. Build Phases & Timeline
+Total: 14 weeks (3.5 months) to production launch
+Phase 1 — Foundation (Weeks 1–3) Student login, JWT, LMS frontend repo setup, dashboard shell showing live attendance and exam results from existing SHO data, basic course view with modules and lessons list. Deliverable: Student can log in and see their batch info, attendance, and exam results.
+Phase 2 — Content Delivery (Weeks 4–6) Video player with resume, PDF/text/link lesson types, module unlock logic, Course Builder in SHO App, completion tracking. Deliverable: Students can watch videos, read PDFs, mark lessons complete.
+Phase 3 — Assessments (Weeks 7–9) Quiz engine with question builder, auto-grading, assignment file upload, mentor grading interface, grades visible in LMS. Deliverable: Students can take quizzes and submit assignments; mentors can grade.
+Phase 4 — Communication & Certificates (Weeks 10–12) Announcement system, discussion forums per lesson, push and email notifications, certificate auto-generation on completion, public verification page. Deliverable: Full LMS feature-complete. Internal launch ready.
+Phase 5 — Polish & Analytics (Weeks 13–14) LMS analytics dashboard in SHO App, student progress PDF reports, performance optimisations, mobile responsiveness audit, user acceptance testing, production launch. Deliverable: Production-ready launch.
+
+
+
+
+
+7. Infrastructure Cost Analysis
+Exchange rate: $1 USD = ₹95.13 INR (mid-market, May 6 2026) Baseline: 1,000 active students
+Service-wise monthly breakdown
+Service
+USD/mo
+INR/mo
+Notes
+Vercel (LMS frontend)
+Free
+₹0
+Hobby tier sufficient for solo developer.
+Render (Express backend)
+$7
+₹666
+Starter plan — always-on. Shared with SHO App.
+MongoDB Atlas M10
+$57
+₹5,422
+Dedicated cluster. M0/M2 free tiers will struggle under 1,000 concurrent students.
+Supabase Pro (assignments/PDFs)
+$25
+₹2,378
+100 GB storage, 200 GB bandwidth. For file uploads only — not video.
+Cloudflare R2 (video, if self-hosted)
+$5–15
+₹475–1,425
+$0 egress. ~200 GB for 1,000 videos ≈ $3/mo storage. No bandwidth bill.
+Email (Resend/Brevo)
+Free
+₹0
+Free tier covers 3,000 emails/mo.
+Push notifications (FCM)
+Free
+₹0
+Firebase Cloud Messaging is free.
+Domain (learn.haca.ac)
+~$1
+~₹95
+~₹1,100/year. Strongly recommended over vercel.app subdomain.
+Total — YouTube embeds (recommended)
+~$94
+~₹8,900
+Render + Atlas M10 + Supabase Pro + domain. Zero video bandwidth cost.
+Total — Self-hosted video on R2
+~$105
+~₹9,975
+Add Cloudflare R2 ~₹950/mo. Full brand control for ₹1,000 extra/month.
+
+Scenario comparison
+Scenario
+INR/mo
+Verdict
+YouTube embeds + R2 for files
+₹8,900
+✅ Recommended — fastest to launch, zero bandwidth cost
+Self-hosted video on Cloudflare R2
+₹9,975
+✅ Choose if branding matters — R2 zero egress keeps it affordable
+
+Growth cost projection
+Students
+Atlas tier
+INR/mo
+Notes
+Up to 500
+M10
+~₹5,225
+Free tiers except Render + Atlas
+500–1,000
+M10
+~₹8,900
+Add Supabase Pro as submissions grow
+1,000–3,000
+M10/M20
+~₹12,350–16,170
+Atlas M20 at high concurrency
+3,000–5,000
+M20
+~₹17,100–20,900
+May need Render Standard ($25/mo)
+
+Cost per student at 1,000: ₹9/month — extremely competitive for a full-featured LMS.
+
+8. Tech Stack
+Layer
+Technology
+Reason
+Frontend
+React 19 + Vite + Tailwind
+Same as SHO App — shared knowledge
+UI
+shadcn/ui
+Consistent design system across both apps
+Video
+react-player
+Supports YouTube, Vimeo, direct MP4 from R2
+Rich text
+Tiptap or Quill
+Lesson content and discussion editor
+PDF viewer
+react-pdf
+In-browser PDF rendering
+File storage
+Cloudflare R2
+S3-compatible, $0 egress — ideal at scale
+Charts
+Recharts
+Same as SHO App
+Backend
+Node.js + Express 4
+Same server — LMS adds new route files only
+Database
+MongoDB + Mongoose 8
+Same Atlas cluster, 6 new collections
+Auth
+JWT
+Same secret — adds student role
+PDF generation
+Puppeteer or pdfkit
+Certificate generation on Render backend
+Hosting
+Vercel + Render
+Same infra — new Vercel project for LMS frontend
+
+
+9. Security Considerations
+Area
+Implementation
+Role isolation
+Student JWT cannot access any SHO App admin endpoints. Enforced at middleware level.
+File uploads
+File type whitelist (PDF, DOCX, ZIP, images only). Virus scanning on storage.
+Quiz integrity
+Questions and answers never sent to client before submission. Option order randomised.
+Rate limiting
+Login attempts limited. Quiz submission rate-limited to prevent brute force.
+Certificate fraud
+Unique IDs stored in DB. Public verification at /verify/{certificateId}.
+Data privacy
+Students can only access their own data. No cross-student data leakage possible.
+
+
+10. Open Questions for Decision
+These must be resolved before or during Phase 1:
+Q1 — Video hosting strategy? YouTube embeds = ₹0 bandwidth, fastest to launch. Self-hosted on R2 = ~₹1,000 more/month but full brand control. Recommendation: start with YouTube, migrate if branding becomes a priority.
+Q2 — Multi-course per student? Current SHO App is one batch per student. If multi-batch is needed, Course and Progress data models change significantly. Must decide before Phase 1 starts.
+Q3 — Offline support? PWA setup for video/PDF downloads. Nice-to-have, not MVP. Defer to post-launch.
+Q4 — Live class tool? Google Meet links = 1-day work. Zoom API = 1–2 weeks. Recommend Meet links for Phase 1.
+Q5 — Existing student migration? Bulk account creation script needed for ~1,000 existing students. Estimate 1–2 days of work. Required before launch.
+Q6 — Certificate design? Who designs the template? Needs brand approval from leadership. Must be resolved by end of Phase 3.
+Q7 — Domain? learn.haca.ac (custom, ~₹1,100/year) vs learn.hacashoapp.vercel.app (free). Custom domain strongly recommended for student credibility.
+Q8 — Mentor LMS read view? Should mentors see a read-only LMS view, or does the SHO App analytics panel cover their needs? Affects Phase 5 scope.
+
+11. Key Integration Points
+Event in SHO App
+Effect in LMS
+Admin creates a Batch
+Course shell auto-created in LMS
+Admin adds Student to Batch
+Student account created, enrolled in course, welcome email sent
+SHO marks Attendance
+Reflects in student's LMS attendance calendar
+Mentor publishes Module Exam
+Result appears in student's LMS grades
+Mentor creates Assignment
+Assignment appears in student's LMS to-do list
+Mentor grades Submission
+Grade and feedback visible to student in LMS
+Mentor adds Class Planner session
+Appears in LMS calendar with join link
+Student completes 100% of course
+Certificate auto-generated and emailed
+
+
+12. CTO Recommendation
+Immediate actions before Phase 1
+Decide on video hosting — YouTube embeds strongly recommended for launch speed
+Run bulk student account creation script for ~1,000 existing students
+Register a custom domain (learn.haca.ac) — ₹1,100/year, high credibility return
+Confirm multi-batch per student requirement — data model decision that cannot be changed cheaply later
+Infrastructure setup
+Upgrade MongoDB Atlas to M10 (₹5,422/mo) — the most critical change; M0/M2 will fail under 1,000-student load
+Move Render to Starter plan (₹666/mo) — eliminates cold starts in production
+Set up Cloudflare R2 for assignment uploads and PDFs
+Configure Supabase Pro for file storage
+Final cost summary
+Stage
+INR/month
+MVP launch (Phase 1 only)
+₹0–2,000
+Full launch, 1,000 students
+₹8,900
+Full launch with self-hosted video
+₹9,975
+At 3,000 students
+₹12,350–16,170
+Cost per student at 1,000
+₹9/student/month
+
+At ₹8,900/month for 1,000 students, the HACA LMS is one of the leanest full-featured learning platforms possible. The single biggest cost driver is MongoDB Atlas M10 at ₹5,422/mo — everything else combined is under ₹700/mo. The infrastructure choices made here — shared backend, Cloudflare R2, JWT auth reuse — are the reason this is achievable at this price point.
+
+Document prepared for HACA Engineering Team · May 2026 · CONFIDENTIAL
+

@@ -1,0 +1,20 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npm create *)",
+      "Bash(npm install *)",
+      "Bash(npx tailwindcss *)",
+      "Bash(npx tsc *)",
+      "Bash(npx vite *)",
+      "Bash(node -e \"console.log\\(require\\('./node_modules/autoprefixer/package.json'\\).version\\)\")",
+      "Bash(node -e \"console.log\\(require\\('./node_modules/browserslist/package.json'\\).version\\)\")",
+      "Bash(node -e \"const b = require\\('browserslist'\\); console.log\\(typeof b\\)\")",
+      "Bash(npm uninstall *)",
+      "Bash(ls ~/lms-haca 2>/dev/null && echo \"exists\" || echo \"clear\")",
+      "Read(//Users/nidhil/**)",
+      "Bash(rm -rf ~/lms-haca)",
+      "Bash(mkdir -p ~/lms-haca/app ~/lms-haca/server)",
+      "Bash(rsync -av --exclude=node_modules --exclude=.git --exclude=dist '/Users/nidhil/Desktop/LMS HACA/' '~/lms-haca/')"
+    ]
+  }
+}

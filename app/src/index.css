@@ -1,0 +1,60 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: 210 17% 95%;
+    --foreground: 210 40% 10%;
+    --card: 0 0% 100%;
+    --card-foreground: 210 40% 10%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 210 40% 10%;
+    --primary: 172 76% 30%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 210 17% 93%;
+    --secondary-foreground: 210 40% 20%;
+    --muted: 210 17% 93%;
+    --muted-foreground: 210 14% 52%;
+    --accent: 172 76% 95%;
+    --accent-foreground: 172 76% 25%;
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 0 0% 100%;
+    --border: 210 17% 88%;
+    --input: 210 17% 88%;
+    --ring: 172 76% 30%;
+    --radius: 0.75rem;
+    --sidebar: 170 40% 12%;
+    --sidebar-foreground: 0 0% 90%;
+  }
+}
+
+@layer base {
+  * { @apply border-border; }
+  body {
+    @apply bg-background text-foreground antialiased;
+    margin: 0;
+    font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  }
+}
+
+::-webkit-scrollbar { width: 4px; height: 4px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 99px; }
+::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+
+@keyframes fade-up {
+  from { opacity: 0; transform: translateY(10px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+@keyframes fade-in {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+.animate-fade-up { animation: fade-up 0.35s ease both; }
+.animate-fade-in { animation: fade-in 0.25s ease both; }
+.delay-100 { animation-delay: 60ms; }
+.delay-200 { animation-delay: 120ms; }
+.delay-300 { animation-delay: 180ms; }
+.delay-400 { animation-delay: 240ms; }
+.delay-500 { animation-delay: 300ms; }
