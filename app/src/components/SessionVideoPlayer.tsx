@@ -40,7 +40,7 @@ export default function SessionVideoPlayer({ src, onReady, onComplete }: Props) 
   const videoRef     = useRef<HTMLVideoElement>(null)
   const containerRef = useRef<HTMLDivElement>(null)
   const progressRef  = useRef<HTMLDivElement>(null)
-  const hideTimer    = useRef<ReturnType<typeof setTimeout>>()
+  const hideTimer    = useRef<ReturnType<typeof setTimeout>>(undefined)
 
   const [playing, setPlaying]           = useState(false)
   const [currentTime, setCurrentTime]   = useState(0)

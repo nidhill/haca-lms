@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { Outlet, NavLink, useNavigate } from 'react-router-dom'
 import {
-  LayoutDashboard, Users, MonitorPlay, Bell, Video, Menu, X,
+  LayoutDashboard, Users, MonitorPlay, Bell, Video, Menu,
   ShieldCheck, LogOut, ChevronRight,
 } from 'lucide-react'
 

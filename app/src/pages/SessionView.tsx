@@ -2,7 +2,7 @@ import { useEffect, useState, useRef } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import {
   ArrowLeft, ArrowRight, CheckCircle, Clock, Calendar,
-  PlayCircle, VideoOff, ChevronLeft, ChevronRight, Lock,
+  PlayCircle, VideoOff, ChevronRight, Lock,
 } from 'lucide-react'
 import { Skeleton } from '../components/ui/skeleton'
 import { toast } from 'sonner'

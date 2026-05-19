@@ -106,7 +106,7 @@ export default function AdminSessions() {
     }
   }
 
-  const uploadFile = async (sessionId: string, file: File) => {
+  const uploadFile = async (_sessionId: string, file: File) => {
     setUploading(true)
     setUploadProgress(0)
     try {
