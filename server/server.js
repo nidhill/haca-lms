@@ -11,8 +11,19 @@ const app = express();
 const PORT = process.env.PORT || 5001;
 
 // Middleware
+const ALLOWED_ORIGINS = [
+  'http://localhost:3001',
+  'http://127.0.0.1:3001',
+  'http://192.168.1.96:3001',
+  'https://haca-lms-zeta.vercel.app',
+  process.env.FRONTEND_URL,
+].filter(Boolean)
+
 app.use(cors({
-  origin: ['http://localhost:3001', 'http://127.0.0.1:3001', 'http://192.168.1.96:3001'],
+  origin: (origin, callback) => {
+    if (!origin || ALLOWED_ORIGINS.includes(origin)) return callback(null, true)
+    callback(new Error('Not allowed by CORS'))
+  },
   credentials: true
 }));
 app.use(express.json());
