@@ -341,28 +341,26 @@ export default function ExtraCourseDetail() {
         </div>
       </div>
 
-      {/* ── Right column: Syllabus (hidden on About tab, shown on Lessons) ────── */}
+      {/* ── Right column: Syllabus ────── */}
       {activeTab === 'lessons' && (
-      <div className="w-full lg:w-[400px] lg:max-w-[400px] border-l border-slate-200 flex flex-col overflow-hidden flex-shrink-0 hidden lg:flex bg-slate-50">
-        {/* Syllabus header */}
-        <div className="px-6 py-5 border-b border-slate-200 flex-shrink-0 bg-white">
-          <div className="flex items-center justify-between mb-4">
-            <span className="text-xs font-bold text-slate-600 tracking-widest uppercase">Progress</span>
-            <span className="text-sm font-bold text-blue-700 bg-blue-50 border border-blue-200 px-3 py-1.5 rounded-lg">
-              {course.progressPercent}%
-            </span>
+      <div className="w-full lg:w-[340px] lg:max-w-[340px] border-l border-slate-200 flex flex-col overflow-hidden flex-shrink-0 hidden lg:flex bg-white">
+
+        {/* Progress header */}
+        <div className="px-5 py-4 border-b border-slate-100 flex-shrink-0 bg-gradient-to-br from-blue-600 to-indigo-700 text-white">
+          <div className="flex items-center justify-between mb-3">
+            <span className="text-xs font-semibold uppercase tracking-widest opacity-80">Course Progress</span>
+            <span className="text-xl font-extrabold">{course.progressPercent}%</span>
           </div>
-          {/* Progress bar */}
-          <div className="h-2 w-full bg-slate-200 rounded-full overflow-hidden">
-            <div className="h-full bg-gradient-to-r from-blue-500 to-blue-600 rounded-full transition-all duration-700" style={{ width: `${course.progressPercent}%` }} />
+          <div className="h-2 w-full bg-white/20 rounded-full overflow-hidden">
+            <div className="h-full bg-white rounded-full transition-all duration-700" style={{ width: `${course.progressPercent}%` }} />
           </div>
-          <p className="text-xs text-slate-600 mt-3 font-medium">
-            {course.completedLessons}/{course.totalLessons} Lesson{course.totalLessons === 1 ? '' : 's'} Complete
+          <p className="text-xs opacity-70 mt-2 font-medium">
+            {course.completedLessons} of {course.totalLessons} lessons completed
           </p>
         </div>
 
         {/* Module list */}
-        <div className="flex-1 overflow-y-auto px-4 py-4">
+        <div className="flex-1 overflow-y-auto py-3">
           {!hasModules ? (
             <div className="flex flex-col items-center justify-center py-16 gap-2 text-center px-5">
               <Sparkles className="h-8 w-8 text-violet-400 opacity-60" />
@@ -371,23 +369,30 @@ export default function ExtraCourseDetail() {
           ) : course.modules.map((mod, mi) => {
             const isOpen = expanded.has(mod._id)
             const modDone = mod.lessons.filter(l => l.isComplete).length
+            const modComplete = modDone === mod.lessons.length
             return (
-              <div key={mod._id} className="mb-2 rounded-lg border border-slate-200 bg-white overflow-hidden">
-                {/* Module row */}
+              <div key={mod._id} className="mb-1">
+                {/* Module header */}
                 <button onClick={() => toggleMod(mod._id)}
-                  className="w-full flex items-center gap-3 px-4 py-3 hover:bg-blue-50 text-left transition-colors">
-                  <span className="text-[11px] font-bold text-blue-600 bg-blue-100 px-2 py-1 rounded-md w-fit shrink-0">{String(mi + 1).padStart(2, '0')}</span>
-                  <div className="flex-1 min-w-0">
-                    <p className="text-sm font-bold text-slate-900 leading-snug">{mod.title}</p>
-                    <p className="text-xs text-slate-500 mt-1">{modDone}/{mod.lessons.length} complete</p>
+                  className="w-full flex items-center gap-3 px-4 py-3 hover:bg-slate-50 text-left transition-colors">
+                  <div className={`w-7 h-7 rounded-lg flex items-center justify-center text-xs font-bold flex-shrink-0 ${
+                    modComplete ? 'bg-green-100 text-green-700' : 'bg-blue-100 text-blue-700'
+                  }`}>
+                    {modComplete ? '✓' : String(mi + 1).padStart(2, '0')}
                   </div>
-                  {isOpen ? <ChevronUp className="h-5 w-5 text-blue-600 shrink-0" /> : <ChevronDown className="h-5 w-5 text-slate-400 shrink-0" />}
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-semibold text-slate-900 leading-snug truncate">{mod.title}</p>
+                    <p className="text-[11px] text-slate-400 mt-0.5">{modDone}/{mod.lessons.length} lessons</p>
+                  </div>
+                  <div className={`transition-transform duration-200 ${isOpen ? 'rotate-180' : ''}`}>
+                    <ChevronDown className="h-4 w-4 text-slate-400" />
+                  </div>
                 </button>
 
-                {/* Lessons with vertical timeline */}
+                {/* Lesson list */}
                 {isOpen && (
-                  <div className="px-4 py-3 border-t border-slate-200">
-                    {mod.lessons.map((l, li) => {
+                  <div className="px-3 pb-2">
+                    {mod.lessons.map((l) => {
                       const locked = isLocked(l._id)
                       const active = l._id === currentId
                       const done = l.isComplete
@@ -395,40 +400,48 @@ export default function ExtraCourseDetail() {
                       return (
                         <button key={l._id} disabled={locked}
                           onClick={() => !locked && setCurrentId(l._id)}
-                          className={`w-full flex items-center gap-3 py-2.5 px-2 rounded-lg text-left transition-all mb-2 ${
-                            active ? 'bg-blue-100 border border-blue-300' :
-                            locked ? 'cursor-not-allowed opacity-60' :
-                            'hover:bg-slate-100 cursor-pointer'
-                          } ${done ? 'opacity-75' : ''}`}>
-                          {/* Status icon */}
-                          <div className="shrink-0 flex-none">
-                            {done ? (
-                              <div className="h-5 w-5 rounded-full bg-green-500 flex items-center justify-center text-white">
-                                <CheckCircle2 className="h-3 w-3" />
-                              </div>
-                            ) : active ? (
-                              <div className="h-5 w-5 rounded-full bg-blue-600 flex items-center justify-center animate-pulse" />
+                          className={`w-full flex items-center gap-3 py-2.5 px-3 rounded-xl text-left transition-all mb-1 group ${
+                            active
+                              ? 'bg-blue-600 shadow-md shadow-blue-200'
+                              : locked
+                              ? 'cursor-not-allowed opacity-40'
+                              : 'hover:bg-slate-100 cursor-pointer'
+                          }`}>
+
+                          {/* Type icon box */}
+                          <div className={`w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0 transition-colors ${
+                            active ? 'bg-white/20' :
+                            done ? 'bg-green-50' : 'bg-slate-100'
+                          }`}>
+                            {done && !active ? (
+                              <CheckCircle2 className="h-4 w-4 text-green-500" />
                             ) : locked ? (
-                              <Lock className="h-4 w-4 text-slate-400" />
+                              <Lock className="h-3.5 w-3.5 text-slate-400" />
                             ) : (
-                              <div className="h-2 w-2 rounded-full bg-slate-400" />
+                              <LessonTypeIcon type={l.type} className={`h-4 w-4 ${active ? 'text-white' : ''}`} />
                             )}
                           </div>
 
-                          {/* Lesson info */}
+                          {/* Title + type */}
                           <div className="flex-1 min-w-0">
-                            <p className={`text-sm leading-snug ${
-                              active ? 'font-bold text-foreground' :
-                              done ? 'font-medium text-foreground' :
-                              locked ? 'text-slate-300' :
-                              'text-slate-600'
+                            <p className={`text-sm font-medium leading-snug truncate ${
+                              active ? 'text-white' :
+                              done ? 'text-slate-500 line-through decoration-slate-300' :
+                              'text-slate-800'
                             }`}>{l.title}</p>
-                            <p className={`flex items-center gap-1 text-xs mt-1 ${locked ? 'text-slate-300' : 'text-slate-500'}`}>
-                              <LessonTypeIcon type={l.type} className="h-3 w-3" />
-                              {lessonTypeLabel(l.type)}
-                              {l.duration ? ` • ${fmtDur(l.duration)}` : ''}
+                            <p className={`text-[11px] mt-0.5 ${active ? 'text-blue-100' : 'text-slate-400'}`}>
+                              {lessonTypeLabel(l.type)}{l.duration ? ` · ${fmtDur(l.duration)}` : ''}
                             </p>
                           </div>
+
+                          {/* Playing indicator */}
+                          {active && (
+                            <div className="flex gap-0.5 items-end h-4 shrink-0">
+                              {[3,5,4].map((h, i) => (
+                                <div key={i} className="w-1 bg-white rounded-full animate-pulse" style={{ height: `${h*3}px`, animationDelay: `${i*150}ms` }} />
+                              ))}
+                            </div>
+                          )}
                         </button>
                       )
                     })}
