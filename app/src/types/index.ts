@@ -9,6 +9,7 @@ export interface User {
   avatar?: string
   batch?: string
   batchName?: string
+  modeOfStudy?: 'Online' | 'Offline'
   fcmToken?: string
   createdAt: string
 }
@@ -71,7 +72,7 @@ export interface Lesson {
   _id: string
   title: string
   order: number
-  type: 'video' | 'pdf' | 'text' | 'link'
+  type: 'pdf' | 'text' | 'link' | 'video'
   contentUrl?: string
   duration?: number
   description?: string

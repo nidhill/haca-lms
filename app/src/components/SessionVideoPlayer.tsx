@@ -56,6 +56,7 @@ export default function SessionVideoPlayer({ src, onReady, onComplete }: Props) 
   const [quality, setQuality]           = useState(QUALITIES[0])
   const [showQuality, setShowQuality]   = useState(false)
   const [activeSrc, setActiveSrc]       = useState(src)
+  const [loadError, setLoadError]       = useState(false)
   const seekAfterLoad                   = useRef<number | null>(null)
   const completeFired                   = useRef(false)
 
@@ -78,9 +79,14 @@ export default function SessionVideoPlayer({ src, onReady, onComplete }: Props) 
 
   // Fullscreen change listener
   useEffect(() => {
-    const h = () => setFullscreen(!!document.fullscreenElement)
+    const doc = document as Document & { webkitFullscreenElement?: Element }
+    const h = () => setFullscreen(!!(document.fullscreenElement || doc.webkitFullscreenElement))
     document.addEventListener('fullscreenchange', h)
-    return () => document.removeEventListener('fullscreenchange', h)
+    document.addEventListener('webkitfullscreenchange', h)
+    return () => {
+      document.removeEventListener('fullscreenchange', h)
+      document.removeEventListener('webkitfullscreenchange', h)
+    }
   }, [])
 
   // Keyboard shortcuts
@@ -114,10 +120,27 @@ export default function SessionVideoPlayer({ src, onReady, onComplete }: Props) 
   }
 
   const toggleFullscreen = async () => {
-    if (!document.fullscreenElement) {
-      await containerRef.current?.requestFullscreen()
-    } else {
-      await document.exitFullscreen()
+    const el = containerRef.current as (HTMLDivElement & {
+      webkitRequestFullscreen?: () => Promise<void> | void
+      msRequestFullscreen?: () => Promise<void> | void
+    }) | null
+    const doc = document as Document & {
+      webkitFullscreenElement?: Element
+      webkitExitFullscreen?: () => Promise<void> | void
+      msExitFullscreen?: () => Promise<void> | void
+    }
+    if (!el) return
+    const isFs = document.fullscreenElement || doc.webkitFullscreenElement
+    try {
+      if (!isFs) {
+        const request = el.requestFullscreen?.bind(el) || el.webkitRequestFullscreen?.bind(el) || el.msRequestFullscreen?.bind(el)
+        await request?.()
+      } else {
+        const exit = document.exitFullscreen?.bind(document) || doc.webkitExitFullscreen?.bind(doc) || doc.msExitFullscreen?.bind(doc)
+        await exit?.()
+      }
+    } catch {
+      // Fullscreen not supported on this browser — silently ignore, button stays usable
     }
   }
 
@@ -186,11 +209,17 @@ export default function SessionVideoPlayer({ src, onReady, onComplete }: Props) 
       onTouchStart={() => { if (!showControls) { resetHide() } }}
     >
       {/* Video element */}
+      {loadError ? (
+        <div className="absolute inset-0 flex items-center justify-center text-white/30 text-sm px-6 text-center">
+          This video could not be loaded. Please check the source link.
+        </div>
+      ) : (
       <video
         ref={videoRef}
         src={activeSrc}
         className="w-full h-full"
         onClick={togglePlay}
+        onError={() => setLoadError(true)}
         onPlay={() => { setPlaying(true); resetHide() }}
         onPause={() => setPlaying(false)}
         onTimeUpdate={() => {
@@ -220,6 +249,7 @@ export default function SessionVideoPlayer({ src, onReady, onComplete }: Props) 
         onWaiting={() => setLoading(true)}
         onPlaying={() => setLoading(false)}
       />
+      )}
 
       {/* Spinner */}
       {loading && (
@@ -250,7 +280,7 @@ export default function SessionVideoPlayer({ src, onReady, onComplete }: Props) 
           {SPEEDS.map(s => (
             <button key={s} onClick={() => setSpeedVal(s)}
               className={`block w-full text-left px-4 py-2.5 text-sm transition-colors ${
-                speed === s ? 'bg-teal-600 text-white font-bold' : 'text-white/80 hover:bg-white/10'
+                speed === s ? 'bg-blue-600 text-white font-bold' : 'text-white/80 hover:bg-white/10'
               }`}>
               {s === 1 ? 'Normal' : `${s}x`}
             </button>
@@ -268,7 +298,7 @@ export default function SessionVideoPlayer({ src, onReady, onComplete }: Props) 
           {QUALITIES.map(q => (
             <button key={q.label} onClick={() => changeQuality(q)}
               className={`flex items-center justify-between w-full text-left px-4 py-2.5 text-sm transition-colors gap-6 ${
-                quality.label === q.label ? 'bg-teal-600 text-white font-bold' : 'text-white/80 hover:bg-white/10'
+                quality.label === q.label ? 'bg-blue-600 text-white font-bold' : 'text-white/80 hover:bg-white/10'
               }`}>
               <span>{q.label}</span>
               {!isCloudinary(src) && q.transform && (
@@ -300,7 +330,7 @@ export default function SessionVideoPlayer({ src, onReady, onComplete }: Props) 
           />
           {/* Played */}
           <div
-            className="absolute inset-y-0 left-0 rounded-full bg-teal-400 group-hover/prog:h-1.5 transition-all"
+            className="absolute inset-y-0 left-0 rounded-full bg-blue-400 group-hover/prog:h-1.5 transition-all"
             style={{ width: `${played}%` }}
           />
           {/* Thumb */}
@@ -393,7 +423,7 @@ export default function SessionVideoPlayer({ src, onReady, onComplete }: Props) 
 
           {/* Speed */}
           <button
-            className={`flex items-center gap-1.5 h-9 px-2.5 rounded-lg hover:bg-white/15 transition-colors text-xs font-bold shrink-0 ${showSpeed ? 'bg-white/15 text-teal-300' : 'text-white'}`}
+            className={`flex items-center gap-1.5 h-9 px-2.5 rounded-lg hover:bg-white/15 transition-colors text-xs font-bold shrink-0 ${showSpeed ? 'bg-white/15 text-blue-300' : 'text-white'}`}
             onClick={() => { setShowSpeed(p => !p); setShowQuality(false) }}
             title="Playback speed"
           >
@@ -403,7 +433,7 @@ export default function SessionVideoPlayer({ src, onReady, onComplete }: Props) 
 
           {/* Quality */}
           <button
-            className={`flex items-center gap-1.5 h-9 px-2.5 rounded-lg hover:bg-white/15 transition-colors text-xs font-bold shrink-0 ${showQuality ? 'bg-white/15 text-teal-300' : 'text-white'}`}
+            className={`flex items-center gap-1.5 h-9 px-2.5 rounded-lg hover:bg-white/15 transition-colors text-xs font-bold shrink-0 ${showQuality ? 'bg-white/15 text-blue-300' : 'text-white'}`}
             onClick={() => { setShowQuality(p => !p); setShowSpeed(false) }}
             title="Video quality"
           >

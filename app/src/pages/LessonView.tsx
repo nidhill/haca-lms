@@ -6,8 +6,8 @@ import { Badge } from '../components/ui/badge'
 import { Button } from '../components/ui/button'
 import { Skeleton } from '../components/ui/skeleton'
 import { Separator } from '../components/ui/separator'
-import { VideoPlayer } from '../components/VideoPlayer'
 import { PdfViewer } from '../components/PdfViewer'
+import { VideoPlayer } from '../components/VideoPlayer'
 import { DiscussionThread } from '../components/DiscussionThread'
 import api from '../services/api'
 import type { Lesson } from '../types'
@@ -22,21 +22,24 @@ export default function LessonView() {
   const { courseId, lessonId } = useParams()
   const navigate = useNavigate()
   const [data, setData] = useState<LessonData | null>(null)
+  const [courseTitle, setCourseTitle] = useState<string>('Course')
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
     setLoading(true)
-    api.get(`/lessons/${lessonId}`)
-      .then((r) => setData(r.data))
+    Promise.all([
+      api.get(`/courses/lessons/${lessonId}`),
+      courseId ? api.get(`/courses/${courseId}`) : Promise.resolve(null)
+    ])
+      .then(([lessonRes, courseRes]) => {
+        setData(lessonRes.data)
+        if (courseRes?.data?.course?.title) {
+          setCourseTitle(courseRes.data.course.title)
+        }
+      })
       .catch(() => navigate(`/courses/${courseId}`))
       .finally(() => setLoading(false))
-  }, [lessonId])
-
-  const handleComplete = () => {
-    if (data) {
-      setData({ ...data, lesson: { ...data.lesson, isComplete: true } })
-    }
-  }
+  }, [lessonId, courseId])
 
   if (loading) {
     return (
@@ -57,7 +60,7 @@ export default function LessonView() {
       <div className="flex items-center gap-2 text-sm text-muted-foreground">
         <Link to="/courses" className="hover:text-foreground">Courses</Link>
         <span>/</span>
-        <Link to={`/courses/${courseId}`} className="hover:text-foreground">Course</Link>
+        <Link to={`/courses/${courseId}`} className="hover:text-foreground truncate">{courseTitle}</Link>
         <span>/</span>
         <span className="text-foreground font-medium truncate">{lesson.title}</span>
       </div>
@@ -86,7 +89,7 @@ export default function LessonView() {
           url={lesson.contentUrl}
           startPosition={lesson.lastPosition}
           isComplete={lesson.isComplete}
-          onComplete={handleComplete}
+          onComplete={() => setData(d => d ? { ...d, lesson: { ...d.lesson, isComplete: true } } : d)}
         />
       )}
 

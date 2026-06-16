@@ -115,7 +115,8 @@ export default function SessionView() {
 
   const youtubeId = session.recordingUrl ? getYouTubeId(session.recordingUrl) : null
   const isDirect  = session.recordingUrl ? isDirectVideo(session.recordingUrl) : false
-  const hasVideo  = !!(youtubeId || isDirect)
+  // Any non-empty recording URL is attempted as a video — SessionVideoPlayer surfaces its own error if it truly fails to load
+  const hasVideo  = !!(youtubeId || session.recordingUrl)
 
   return (
     <div className="space-y-5 animate-fade-up pb-8 max-w-4xl mx-auto">
@@ -137,7 +138,7 @@ export default function SessionView() {
         </button>
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2 flex-wrap">
-            <span className="text-xs font-semibold text-teal-600 bg-teal-50 border border-teal-100 px-2 py-0.5 rounded-full">Day {session.day}</span>
+            <span className="text-xs font-semibold text-blue-600 bg-blue-50 border border-blue-100 px-2 py-0.5 rounded-full">Day {session.day}</span>
             {session.sessionType && (
               <span className="text-xs text-muted-foreground capitalize bg-muted px-2 py-0.5 rounded-full">{session.sessionType}</span>
             )}
@@ -202,17 +203,23 @@ export default function SessionView() {
       )}
 
       {/* Complete status bar */}
-      <div className="bg-white rounded-2xl border border-border px-5 py-4 flex items-center gap-3">
+      <div className="bg-white rounded-2xl border border-border px-5 py-4 flex items-center justify-between gap-3">
         {isWatched ? (
           <div className="flex items-center gap-2 text-emerald-600 font-medium text-sm">
             <CheckCircle className="h-5 w-5" />
             Session completed — next session unlocked!
           </div>
         ) : (
-          <div className="flex items-center gap-2 text-muted-foreground text-sm">
+          <div className="flex items-center gap-2 text-muted-foreground text-sm flex-1">
             <span className="h-4 w-4 rounded-full border-2 border-muted-foreground/30 shrink-0" />
-            {hasVideo && isDirect ? 'Watch 80% of the video to auto-complete this session' : 'Video recording not available — check back later'}
+            {hasVideo && isDirect ? 'Watch 80% of the video to auto-complete this session' : youtubeId ? 'Finish watching the video' : 'Video recording not available — check back later'}
           </div>
+        )}
+        {!isWatched && youtubeId && (
+          <button onClick={markComplete} disabled={marking}
+            className="ml-auto px-4 py-2 rounded-xl bg-blue-600 text-white text-sm font-medium hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors">
+            {marking ? 'Marking...' : 'Mark Complete'}
+          </button>
         )}
       </div>
 
@@ -274,12 +281,12 @@ export default function SessionView() {
         {next ? (
           next.isUnlocked || isWatched ? (
             <button onClick={() => navigate(`/courses/${courseId}/sessions/${next._id}`)}
-              className="flex items-center gap-2 rounded-xl border border-teal-200 bg-teal-50 px-4 py-3 hover:bg-teal-100 transition-colors text-right flex-1 max-w-xs ml-auto">
+              className="flex items-center gap-2 rounded-xl border border-blue-200 bg-blue-50 px-4 py-3 hover:bg-blue-100 transition-colors text-right flex-1 max-w-xs ml-auto">
               <div className="min-w-0 flex-1">
-                <p className="text-[10px] text-teal-600 font-medium">Next Session</p>
-                <p className="text-sm font-semibold text-teal-800 truncate">Day {next.day} · {next.topic}</p>
+                <p className="text-[10px] text-blue-600 font-medium">Next Session</p>
+                <p className="text-sm font-semibold text-blue-800 truncate">Day {next.day} · {next.topic}</p>
               </div>
-              <ArrowRight className="h-4 w-4 shrink-0 text-teal-600" />
+              <ArrowRight className="h-4 w-4 shrink-0 text-blue-600" />
             </button>
           ) : (
             <div className="flex items-center gap-2 rounded-xl border border-border bg-muted/30 px-4 py-3 text-right flex-1 max-w-xs ml-auto opacity-60 cursor-not-allowed">

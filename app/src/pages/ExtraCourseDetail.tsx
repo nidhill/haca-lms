@@ -137,7 +137,8 @@ export default function ExtraCourseDetail() {
     const isValidUrl = (url: string) => url && (url.startsWith('http') || url.startsWith('/'))
 
     if (hasModules && current) {
-      if (current.contentUrl && (isVideoUrl(current.contentUrl) || isYouTube(current.contentUrl)))
+      // type === 'video' is trusted as-is; VideoPlayer itself falls back gracefully if the URL turns out unplayable
+      if (current.contentUrl && (current.type === 'video' || isVideoUrl(current.contentUrl) || isYouTube(current.contentUrl)))
         return <VideoPlayer key={current._id} lessonId={current._id} courseId={course._id} url={current.contentUrl} poster={current.thumbnail} isComplete={current.isComplete} onComplete={() => markComplete(current._id)} />
       if (current.type === 'pdf' && current.contentUrl) {
         return <PdfViewer url={current.contentUrl} isComplete={current.isComplete} onMarkComplete={() => markComplete(current._id)} />
