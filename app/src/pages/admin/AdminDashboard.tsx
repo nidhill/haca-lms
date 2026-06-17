@@ -34,7 +34,7 @@ export default function AdminDashboard() {
 
   const METRICS = stats ? [
     { label: 'Total Students',   value: stats.totalStudents,   icon: Users,       bg: 'bg-blue-50',   color: 'text-blue-600'   },
-    { label: 'Sessions',         value: stats.totalSessions,   icon: MonitorPlay, bg: 'bg-teal-50',   color: 'text-teal-600'   },
+    { label: 'Sessions',         value: stats.totalSessions,   icon: MonitorPlay, bg: 'bg-blue-50',   color: 'text-blue-600'   },
     { label: 'Exams Published',  value: stats.totalExams,      icon: FileText,    bg: 'bg-violet-50', color: 'text-violet-600' },
     { label: 'Announcements',    value: stats.totalAnnouncements, icon: Bell,     bg: 'bg-amber-50',  color: 'text-amber-600'  },
   ] : []
@@ -81,7 +81,7 @@ export default function AdminDashboard() {
             <div className="relative h-20 w-20 shrink-0">
               <svg className="h-20 w-20 -rotate-90" viewBox="0 0 80 80">
                 <circle cx="40" cy="40" r="34" fill="none" stroke="#e2e8f0" strokeWidth="8" />
-                <circle cx="40" cy="40" r="34" fill="none" stroke="#0d6b5c" strokeWidth="8"
+                <circle cx="40" cy="40" r="34" fill="none" stroke="#1d4ed8" strokeWidth="8"
                   strokeLinecap="round"
                   strokeDasharray={`${2 * Math.PI * 34}`}
                   strokeDashoffset={`${2 * Math.PI * 34 * (1 - (stats?.sessionProgress ?? 0) / 100)}`}
@@ -97,7 +97,7 @@ export default function AdminDashboard() {
             </div>
           </div>
           <div className="h-2 w-full bg-muted rounded-full overflow-hidden">
-            <div className="h-full rounded-full bg-teal-600 transition-all duration-1000" style={{ width: `${stats?.sessionProgress ?? 0}%` }} />
+            <div className="h-full rounded-full bg-blue-600 transition-all duration-1000" style={{ width: `${stats?.sessionProgress ?? 0}%` }} />
           </div>
         </div>
 
@@ -134,7 +134,7 @@ export default function AdminDashboard() {
                 <p className="text-sm font-semibold truncate">{a.title}</p>
                 <p className="text-xs text-muted-foreground">{formatDate(a.createdAt)}</p>
               </div>
-              {a.isPinned && <span className="text-[10px] font-bold text-teal-600 bg-teal-50 border border-teal-100 px-1.5 py-0.5 rounded-full shrink-0">Pinned</span>}
+              {a.isPinned && <span className="text-[10px] font-bold text-blue-600 bg-blue-50 border border-blue-100 px-1.5 py-0.5 rounded-full shrink-0">Pinned</span>}
             </div>
           ))}
         </div>

@@ -4,28 +4,28 @@
 
 @layer base {
   :root {
-    --background: 210 17% 95%;
-    --foreground: 210 40% 10%;
+    --background: 0 0% 99%;
+    --foreground: 222 47% 11%;
     --card: 0 0% 100%;
-    --card-foreground: 210 40% 10%;
+    --card-foreground: 222 47% 11%;
     --popover: 0 0% 100%;
-    --popover-foreground: 210 40% 10%;
-    --primary: 172 76% 30%;
+    --popover-foreground: 222 47% 11%;
+    --primary: 174 77% 31%;
     --primary-foreground: 0 0% 100%;
-    --secondary: 210 17% 93%;
-    --secondary-foreground: 210 40% 20%;
-    --muted: 210 17% 93%;
-    --muted-foreground: 210 14% 52%;
-    --accent: 172 76% 95%;
-    --accent-foreground: 172 76% 25%;
+    --secondary: 210 16% 95%;
+    --secondary-foreground: 222 47% 25%;
+    --muted: 210 16% 95%;
+    --muted-foreground: 215 16% 47%;
+    --accent: 210 16% 95%;
+    --accent-foreground: 222 47% 11%;
     --destructive: 0 84% 60%;
-    --destructive-foreground: 0 0% 100%;
-    --border: 210 17% 88%;
-    --input: 210 17% 88%;
-    --ring: 172 76% 30%;
-    --radius: 0.75rem;
-    --sidebar: 170 40% 12%;
-    --sidebar-foreground: 0 0% 90%;
+    --destructive-foreground: 0 0% 98%;
+    --border: 214 17% 90%;
+    --input: 214 17% 90%;
+    --ring: 174 77% 31%;
+    --radius: 0.875rem;
+    --sidebar: 225 25% 12%;
+    --sidebar-foreground: 220 14% 80%;
   }
 }
 
@@ -34,7 +34,12 @@
   body {
     @apply bg-background text-foreground antialiased;
     margin: 0;
-    font-family: 'Inter', system-ui, -apple-system, sans-serif;
+    font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+  }
+  h1, h2, h3, h4, h5, h6 {
+    font-family: 'Plus Jakarta Sans', system-ui, sans-serif;
+    font-weight: 700;
+    letter-spacing: -0.02em;
   }
 }
 

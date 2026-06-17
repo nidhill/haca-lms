@@ -1,10 +1,16 @@
 // ─── Auth ────────────────────────────────────────────────────────────────────
 
+export interface AssignedBatch {
+  _id: string
+  name: string
+  code?: string
+}
+
 export interface User {
   _id: string
   name: string
   email: string
-  role: 'student'
+  role: 'student' | 'sho'
   phone?: string
   avatar?: string
   batch?: string
@@ -12,6 +18,7 @@ export interface User {
   modeOfStudy?: 'Online' | 'Offline'
   fcmToken?: string
   createdAt: string
+  assignedBatches?: AssignedBatch[]
 }
 
 // ─── Dashboard ───────────────────────────────────────────────────────────────

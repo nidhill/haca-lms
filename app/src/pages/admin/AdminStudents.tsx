@@ -83,7 +83,7 @@ export default function AdminStudents() {
                     <td className="px-5 py-3 text-muted-foreground">{s.phone || '—'}</td>
                     <td className="px-5 py-3">
                       {s.batchName
-                        ? <span className="text-xs font-medium bg-teal-50 text-teal-700 border border-teal-100 px-2 py-0.5 rounded-full">{s.batchName}</span>
+                        ? <span className="text-xs font-medium bg-blue-50 text-blue-700 border border-blue-100 px-2 py-0.5 rounded-full">{s.batchName}</span>
                         : <span className="text-muted-foreground">—</span>}
                     </td>
                   </tr>

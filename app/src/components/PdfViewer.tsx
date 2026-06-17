@@ -1,28 +1,36 @@
-import { ExternalLink } from 'lucide-react'
+import { CheckCircle2 } from 'lucide-react'
 import { Button } from './ui/button'
 
 interface PdfViewerProps {
   url: string
+  isComplete?: boolean
+  onMarkComplete?: () => void
 }
 
-export function PdfViewer({ url }: PdfViewerProps) {
+export function PdfViewer({ url, isComplete, onMarkComplete }: PdfViewerProps) {
+  // Use PUBLIC backend proxy to serve PDF with correct Content-Disposition: inline header
+  const proxyUrl = `http://localhost:5050/api/pdf-proxy?url=${encodeURIComponent(url)}`
+
   return (
-    <div className="space-y-3">
-      <div className="flex items-center justify-between">
-        <p className="text-sm text-muted-foreground">PDF Document</p>
-        <a href={url} target="_blank" rel="noopener noreferrer">
-          <Button variant="outline" size="sm">
-            <ExternalLink className="mr-2 h-3.5 w-3.5" />
-            Open in new tab
+    <div className="w-full space-y-3">
+      <iframe
+        src={proxyUrl}
+        className="w-full rounded-lg border border-slate-200 dark:border-white/10"
+        style={{ height: '600px' }}
+        title="PDF Viewer"
+        allow="fullscreen"
+      />
+      <div className="flex justify-center">
+        {onMarkComplete && (
+          <Button
+            size="sm"
+            onClick={onMarkComplete}
+            className={`gap-2 ${isComplete ? 'bg-emerald-600 hover:bg-emerald-700' : 'bg-blue-600 hover:bg-blue-700'}`}
+          >
+            <CheckCircle2 className="h-3.5 w-3.5" />
+            {isComplete ? 'Completed' : 'Mark as Complete'}
           </Button>
-        </a>
-      </div>
-      <div className="rounded-lg overflow-hidden border bg-muted" style={{ height: '70vh' }}>
-        <iframe
-          src={`${url}#toolbar=1&navpanes=1`}
-          className="w-full h-full"
-          title="PDF Viewer"
-        />
+        )}
       </div>
     </div>
   )

@@ -26,6 +26,7 @@ const userSchema = new mongoose.Schema({
     ref: 'Batch',
   },
   batchName: String,
+  avatar: String,
   fcmToken: String,
   resetToken: String,
   resetTokenExpiry: Date,

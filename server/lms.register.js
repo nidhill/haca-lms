@@ -36,6 +36,8 @@ function registerLmsRoutes(app) {
   app.use('/api/lms/certificates', require('./routes/lms.certificates'))
   app.use('/api/lms/announcements', require('./routes/lms.announcements'))
   app.use('/api/lms/discussions', require('./routes/lms.discussions'))
+  app.use('/api/lms/live-classes', require('./routes/lms.liveclasses'))
+  app.use('/api/lms/leaderboard', require('./routes/lms.leaderboard'))
   app.use('/api/lms/analytics', require('./routes/lms.analytics'))
 
   // Unified auth

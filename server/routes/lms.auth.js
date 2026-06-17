@@ -50,8 +50,10 @@ router.get('/me', lmsAuth, async (req, res) => {
         email: user.email,
         role: user.role,
         phone: user.phone,
+        avatar: user.avatar,
         batch: user.batch?._id,
         batchName: user.batch?.name,
+        createdAt: user.createdAt,
       },
     })
   } catch {
@@ -115,6 +117,138 @@ router.patch('/change-password', lmsAuth, async (req, res) => {
     user.password = await bcrypt.hash(newPassword, 10)
     await user.save()
     res.json({ message: 'Password updated.' })
+  } catch {
+    res.status(500).json({ message: 'Server error' })
+  }
+})
+
+// PATCH /api/lms/auth/update-profile
+router.patch('/update-profile', lmsAuth, async (req, res) => {
+  try {
+    const { phone, avatar } = req.body
+    const update = {}
+    if (phone !== undefined) update.phone = String(phone).trim()
+    if (avatar !== undefined) update.avatar = avatar
+    const user = await User.findByIdAndUpdate(req.user.id, update, { new: true })
+    res.json({ user: { phone: user.phone, avatar: user.avatar } })
+  } catch {
+    res.status(500).json({ message: 'Server error' })
+  }
+})
+
+// POST /api/lms/auth/upload-avatar
+router.post('/upload-avatar', lmsAuth, async (req, res) => {
+  try {
+    const multer = require('multer')
+    const upload = multer({ storage: multer.memoryStorage(), limits: { fileSize: 5 * 1024 * 1024 } })
+    upload.single('avatar')(req, res, async (err) => {
+      if (err) return res.status(400).json({ message: err.message })
+      if (!req.file) return res.status(400).json({ message: 'No file' })
+      const { cloudinary } = require('../services/cloudinary')
+      const stream = cloudinary.uploader.upload_stream(
+        { folder: 'haca-lms/avatars', transformation: [{ width: 200, height: 200, crop: 'fill', gravity: 'face', quality: 'auto' }] },
+        async (error, result) => {
+          if (error || !result) return res.status(500).json({ message: 'Upload failed' })
+          await User.findByIdAndUpdate(req.user.id, { avatar: result.secure_url })
+          res.json({ url: result.secure_url })
+        }
+      )
+      stream.end(req.file.buffer)
+    })
+  } catch {
+    res.status(500).json({ message: 'Server error' })
+  }
+})
+
+// GET /api/lms/auth/profile-stats
+router.get('/profile-stats', lmsAuth, async (req, res) => {
+  try {
+    const mongoose = require('mongoose')
+    const StudentProgress = require('../models/StudentProgress')
+    const Course = require('../models/Course')
+    const Certificate = require('../models/Certificate')
+    const Attendance = require('../models/Attendance')
+
+    const student = await User.findById(req.user.id).populate('batch')
+    const batchId = student?.batch?._id
+
+    // LMS lesson progress
+    const completedLessons = await StudentProgress.countDocuments({ student: req.user.id, isComplete: true })
+    let totalLessons = 0
+    if (batchId) {
+      const course = await Course.findOne({ batch: batchId })
+      if (course) totalLessons = course.totalLessons || 0
+    }
+    const progressPercent = totalLessons > 0 ? Math.round((completedLessons / totalLessons) * 100) : 0
+
+    // Attendance %
+    let attendancePercent = 0
+    if (batchId) {
+      const studentDoc = await mongoose.connection.db
+        .collection('students').findOne({ email: student.email }, { projection: { _id: 1 } })
+      const attendanceStudentId = studentDoc ? String(studentDoc._id) : null
+      if (attendanceStudentId) {
+        const allAtt = await Attendance.find({ batch: batchId })
+        let present = 0, total = 0
+        allAtt.forEach(a => {
+          const record = a.students.find(s => String(s.student) === attendanceStudentId)
+          if (record) { total++; if (record.status === 'present' || record.status === 'late') present++ }
+        })
+        if (total > 0) attendancePercent = Math.round((present / total) * 100)
+      }
+    }
+
+    const certCount = await Certificate.countDocuments({ student: req.user.id })
+
+    res.json({ completedLessons, totalLessons, progressPercent, attendancePercent, certCount })
+  } catch (err) {
+    console.error(err)
+    res.status(500).json({ message: 'Server error' })
+  }
+})
+
+// GET /api/lms/auth/activity
+router.get('/activity', lmsAuth, async (req, res) => {
+  try {
+    const StudentProgress = require('../models/StudentProgress')
+    const Course = require('../models/Course')
+    const Certificate = require('../models/Certificate')
+
+    const recentProgress = await StudentProgress.find({ student: req.user.id, isComplete: true })
+      .sort({ completedAt: -1 }).limit(15)
+
+    const courseIds = [...new Set(recentProgress.map(p => String(p.course)))]
+    const courses = await Course.find({ _id: { $in: courseIds } })
+    const lessonMap = {}
+    for (const course of courses) {
+      for (const mod of (course.modules || [])) {
+        for (const lesson of (mod.lessons || [])) {
+          lessonMap[String(lesson._id)] = { lessonTitle: lesson.title, courseTitle: course.title }
+        }
+      }
+    }
+
+    const lessonActivities = recentProgress.slice(0, 10).map(p => ({
+      type: 'lesson',
+      title: lessonMap[String(p.lessonId)]?.lessonTitle || 'Lesson completed',
+      subtitle: lessonMap[String(p.lessonId)]?.courseTitle || '',
+      date: p.completedAt || p.updatedAt,
+    }))
+
+    const certs = await Certificate.find({ student: req.user.id })
+      .populate('course', 'title').sort({ issuedAt: -1 }).limit(5)
+    const certActivities = certs.map(c => ({
+      type: 'certificate',
+      title: `Certificate earned`,
+      subtitle: c.course?.title || 'Course',
+      date: c.issuedAt,
+    }))
+
+    const all = [...lessonActivities, ...certActivities]
+      .sort((a, b) => new Date(b.date) - new Date(a.date))
+      .slice(0, 15)
+
+    res.json({ activities: all })
   } catch {
     res.status(500).json({ message: 'Server error' })
   }

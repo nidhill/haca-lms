@@ -251,8 +251,8 @@ export default function AdminSessions() {
                 <button onClick={() => setExpandedModule(isExpanded ? null : mod)}
                   className="w-full flex items-center justify-between px-5 py-4 hover:bg-muted/20 transition-colors">
                   <div className="flex items-center gap-3 min-w-0">
-                    <div className="h-9 w-9 rounded-xl bg-teal-50 flex items-center justify-center shrink-0">
-                      <PlayCircle className="h-4 w-4 text-teal-600" />
+                    <div className="h-9 w-9 rounded-xl bg-blue-50 flex items-center justify-center shrink-0">
+                      <PlayCircle className="h-4 w-4 text-blue-600" />
                     </div>
                     <div className="text-left min-w-0">
                       <p className="font-bold text-sm truncate">{mod}</p>
@@ -261,7 +261,7 @@ export default function AdminSessions() {
                   </div>
                   <div className="flex items-center gap-2 shrink-0">
                     {withRecording > 0 && (
-                      <span className="text-[10px] font-bold text-teal-600 bg-teal-50 border border-teal-100 px-2 py-0.5 rounded-full">
+                      <span className="text-[10px] font-bold text-blue-600 bg-blue-50 border border-blue-100 px-2 py-0.5 rounded-full">
                         {withRecording}/{sessions.length}
                       </span>
                     )}
@@ -276,7 +276,7 @@ export default function AdminSessions() {
                         <div className="flex items-start gap-3">
                           <div className={`h-8 w-8 rounded-lg flex items-center justify-center text-xs font-bold border shrink-0 ${
                             s.status === 'completed'
-                              ? 'bg-teal-50 border-teal-200 text-teal-700'
+                              ? 'bg-blue-50 border-blue-200 text-blue-700'
                               : 'bg-muted border-border text-muted-foreground'
                           }`}>
                             {s.curriculumDay}
@@ -285,7 +285,7 @@ export default function AdminSessions() {
                             <div className="flex items-center gap-2 flex-wrap">
                               <p className="text-sm font-semibold">{s.topic || 'Untitled'}</p>
                               {s.recordingUrl
-                                ? <span className="flex items-center gap-1 text-[10px] text-teal-600 bg-teal-50 border border-teal-100 px-1.5 py-0.5 rounded-full font-medium">
+                                ? <span className="flex items-center gap-1 text-[10px] text-blue-600 bg-blue-50 border border-blue-100 px-1.5 py-0.5 rounded-full font-medium">
                                     <PlayCircle className="h-2.5 w-2.5" /> Has Recording
                                   </span>
                                 : <span className="flex items-center gap-1 text-[10px] text-muted-foreground bg-muted px-1.5 py-0.5 rounded-full">
@@ -322,7 +322,7 @@ export default function AdminSessions() {
                                   </button>
                                   {uploading && (
                                     <div className="flex-1 h-1.5 bg-muted rounded-full overflow-hidden">
-                                      <div className="h-full bg-teal-500 transition-all" style={{ width: `${uploadProgress}%` }} />
+                                      <div className="h-full bg-blue-500 transition-all" style={{ width: `${uploadProgress}%` }} />
                                     </div>
                                   )}
                                 </div>
@@ -334,7 +334,7 @@ export default function AdminSessions() {
                                 )}
                                 <button
                                   onClick={() => { setEditingId(s._id); setUrlInput(s.recordingUrl || '') }}
-                                  className="text-xs text-teal-600 hover:underline font-medium shrink-0">
+                                  className="text-xs text-blue-600 hover:underline font-medium shrink-0">
                                   {s.recordingUrl ? 'Edit' : '+ Add recording'}
                                 </button>
                               </div>

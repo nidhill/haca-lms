@@ -346,7 +346,7 @@ export default function AdminLiveClasses() {
                     variant="outline"
                     onClick={generateMeetLink}
                     disabled={generatingMeet}
-                    className="shrink-0 gap-1.5 text-xs border-teal-200 text-teal-700 hover:bg-teal-50"
+                    className="shrink-0 gap-1.5 text-xs border-blue-200 text-blue-700 hover:bg-blue-50"
                     title={googleConnected ? 'Auto-generate Meet link' : 'Connect Google first'}
                   >
                     {generatingMeet
@@ -398,13 +398,13 @@ function ClassCard({ lc, batchName, status, onEdit, onDelete }: {
   return (
     <div className={`bg-white rounded-2xl border p-5 flex items-start gap-4 ${
       status === 'live' ? 'border-red-200 shadow-sm shadow-red-100' :
-      status === 'upcoming' ? 'border-teal-200' : 'border-border opacity-70'
+      status === 'upcoming' ? 'border-blue-200' : 'border-border opacity-70'
     }`}>
       <div className={`h-11 w-11 rounded-xl flex items-center justify-center shrink-0 ${
-        status === 'live' ? 'bg-red-50' : status === 'upcoming' ? 'bg-teal-50' : 'bg-muted'
+        status === 'live' ? 'bg-red-50' : status === 'upcoming' ? 'bg-blue-50' : 'bg-muted'
       }`}>
         <Video className={`h-5 w-5 ${
-          status === 'live' ? 'text-red-500' : status === 'upcoming' ? 'text-teal-700' : 'text-muted-foreground'
+          status === 'live' ? 'text-red-500' : status === 'upcoming' ? 'text-blue-700' : 'text-muted-foreground'
         }`} />
       </div>
 
@@ -443,7 +443,7 @@ function ClassCard({ lc, batchName, status, onEdit, onDelete }: {
               className={`inline-flex items-center gap-1.5 text-xs font-semibold px-3 py-1.5 rounded-lg border transition-colors ${
                 status === 'live'
                   ? 'bg-red-500 text-white border-red-500 hover:bg-red-600'
-                  : 'bg-teal-50 text-teal-700 border-teal-200 hover:bg-teal-100'
+                  : 'bg-blue-50 text-blue-700 border-blue-200 hover:bg-blue-100'
               }`}>
               <ExternalLink className="h-3 w-3" />
               {status === 'live' ? 'Join Now' : 'Join Link'}

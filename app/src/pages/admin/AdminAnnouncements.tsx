@@ -94,13 +94,13 @@ export default function AdminAnnouncements() {
           <div className="divide-y divide-border">
             {list.map(a => (
               <div key={a._id} className="flex items-start gap-4 px-5 py-4 hover:bg-muted/20">
-                <div className={`mt-0.5 h-8 w-8 rounded-full flex items-center justify-center border shrink-0 ${a.isPinned ? 'bg-teal-50 border-teal-200 text-teal-600' : 'bg-muted border-border text-muted-foreground'}`}>
+                <div className={`mt-0.5 h-8 w-8 rounded-full flex items-center justify-center border shrink-0 ${a.isPinned ? 'bg-blue-50 border-blue-200 text-blue-600' : 'bg-muted border-border text-muted-foreground'}`}>
                   {a.isPinned ? <Pin className="h-3.5 w-3.5" /> : <Bell className="h-3.5 w-3.5" />}
                 </div>
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2 flex-wrap">
                     <p className="text-sm font-semibold">{a.title}</p>
-                    {a.isPinned && <span className="text-[10px] font-bold text-teal-600 bg-teal-50 border border-teal-100 px-1.5 py-0.5 rounded-full">Pinned</span>}
+                    {a.isPinned && <span className="text-[10px] font-bold text-blue-600 bg-blue-50 border border-blue-100 px-1.5 py-0.5 rounded-full">Pinned</span>}
                   </div>
                   <p className="text-xs text-muted-foreground line-clamp-1 mt-0.5">{a.body}</p>
                   <p className="text-[10px] text-muted-foreground/60 mt-1">{formatDate(a.createdAt)}</p>

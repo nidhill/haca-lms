@@ -99,7 +99,7 @@ export default function ExamResults() {
       </div>
 
       {/* Score trend chart */}
-      {chartData.length > 1 && (
+      {chartData.length > 1 ? (
         <div className="bg-white rounded-2xl border border-border p-5">
           <div className="flex items-center gap-2 mb-4">
             <TrendingUp className="h-4 w-4 text-muted-foreground" />
@@ -119,7 +119,13 @@ export default function ExamResults() {
             </LineChart>
           </ResponsiveContainer>
         </div>
-      )}
+      ) : results.length === 1 ? (
+        <div className="bg-white rounded-2xl border border-border p-8 flex flex-col items-center gap-3 text-muted-foreground">
+          <TrendingUp className="h-8 w-8 opacity-40" />
+          <p className="text-sm font-medium">Complete more exams to see your score trend</p>
+          <p className="text-xs">Your progress will be tracked after your next exam.</p>
+        </div>
+      ) : null}
 
       {/* Results table */}
       <div className="bg-white rounded-2xl border border-border overflow-hidden">
