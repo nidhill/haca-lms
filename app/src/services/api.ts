@@ -2,7 +2,7 @@ import axios from 'axios'
 import { toast } from 'sonner'
 
 const api = axios.create({
-  baseURL: import.meta.env.VITE_API_URL || '/api/lms',
+  baseURL: import.meta.env.VITE_API_URL || 'https://sho-lms-production-server.onrender.com/api/lms',
   timeout: 30000,
 })
 
@@ -18,6 +18,9 @@ api.interceptors.response.use(
     if (err.response?.status === 401) {
       // Don't redirect if this is the login request itself
       if (!err.config?.url?.includes('/auth/login')) {
+        if (err.response?.data?.deviceLimitLogout) {
+          toast.error('Logged out: device limit (2) reached on another device.')
+        }
         localStorage.removeItem('lms_token')
         window.location.href = '/login'
       }

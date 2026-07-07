@@ -2,7 +2,7 @@ import axios from 'axios'
 import { toast } from 'sonner'
 
 const adminApi = axios.create({
-  baseURL: import.meta.env.VITE_API_URL?.replace('/api/lms', '/api/admin') || 'http://localhost:5001/api/admin',
+  baseURL: import.meta.env.VITE_API_URL?.replace('/api/lms', '/api/admin') || 'https://sho-lms-production-server.onrender.com/api/admin',
   timeout: 30000,
 })
 
