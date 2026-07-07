@@ -1,8 +1,10 @@
 import { useEffect, useState } from 'react'
-import { Search, Users } from 'lucide-react'
+import { Search, Users, RefreshCw } from 'lucide-react'
 import { Skeleton } from '../../components/ui/skeleton'
 import { Input } from '../../components/ui/input'
+import { Button } from '../../components/ui/button'
 import adminApi from '../../services/adminApi'
+import { toast } from 'sonner'
 
 interface Student {
   _id: string; name: string; email: string; phone?: string; batchName?: string
@@ -14,6 +16,19 @@ export default function AdminStudents() {
   const [selectedBatch, setSelectedBatch] = useState('')
   const [search, setSearch] = useState('')
   const [loading, setLoading] = useState(true)
+  const [syncing, setSyncing] = useState(false)
+
+  const syncAccounts = async () => {
+    setSyncing(true)
+    try {
+      const res = await adminApi.post('/sync-student-accounts', {})
+      toast.success(`Sync done: ${res.data.created} new accounts created, ${res.data.skipped} already existed`)
+    } catch {
+      toast.error('Sync failed')
+    } finally {
+      setSyncing(false)
+    }
+  }
 
   useEffect(() => {
     adminApi.get('/sessions/batches').then(r => setBatches(r.data.batches || []))
@@ -32,9 +47,15 @@ export default function AdminStudents() {
 
   return (
     <div className="space-y-5 animate-fade-up">
-      <div>
-        <h1 className="text-2xl font-bold">Students</h1>
-        <p className="text-sm text-muted-foreground">{students.length} students found</p>
+      <div className="flex items-center justify-between gap-3 flex-wrap">
+        <div>
+          <h1 className="text-2xl font-bold">Students</h1>
+          <p className="text-sm text-muted-foreground">{students.length} students found</p>
+        </div>
+        <Button variant="outline" size="sm" onClick={syncAccounts} disabled={syncing} className="gap-2">
+          <RefreshCw className={`h-4 w-4 ${syncing ? 'animate-spin' : ''}`} />
+          {syncing ? 'Syncing…' : 'Sync LMS Accounts'}
+        </Button>
       </div>
 
       {/* Filters */}
