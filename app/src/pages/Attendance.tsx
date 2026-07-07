@@ -56,7 +56,6 @@ export default function Attendance() {
   const counts = { present: 0, absent: 0, late: 0, excused: 0 }
   monthRecords.forEach((r) => counts[r.status]++)
   const total = monthRecords.length
-  const monthPercent = total > 0 ? Math.round(((counts.present + counts.late) / total) * 100) : 0
 
   const cells: (number | null)[] = [...Array(firstDay).fill(null), ...Array.from({ length: daysInMonth }, (_, i) => i + 1)]
   while (cells.length % 7 !== 0) cells.push(null)
@@ -108,21 +107,6 @@ export default function Attendance() {
         ))}
       </div>
 
-      {/* This month % */}
-      {total > 0 && (
-        <Card>
-          <CardContent className="flex items-center justify-between p-5">
-            <div>
-              <p className="text-sm text-muted-foreground">This month</p>
-              <p className="text-2xl font-bold text-violet-600">{monthPercent}%</p>
-            </div>
-            <div className="text-right">
-              <p className="text-sm text-muted-foreground">{counts.present + counts.late} attended</p>
-              <p className="text-sm text-muted-foreground">out of {total} days</p>
-            </div>
-          </CardContent>
-        </Card>
-      )}
 
       {/* Calendar */}
       <Card>
