@@ -115,7 +115,7 @@ export default function ResetPassword() {
 
       <footer className="py-5 px-6 border-t border-gray-200/80 bg-white/50">
         <div className="max-w-5xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-3">
-          <p className="text-xs text-gray-400">© 2025 HACA · Happily A Career Academy. All rights reserved.</p>
+          <p className="text-xs text-gray-400">© 2025 HACA · Harisandco Academy. All rights reserved.</p>
           <div className="flex items-center gap-5">
             {['Support', 'Privacy Policy', 'Terms of Service'].map(l => (
               <a key={l} href="mailto:tech.haca@gmail.com"

@@ -52,7 +52,7 @@ export default function VerifyCertificate() {
                 </div>
                 <div className="flex items-center justify-center gap-2 text-xs text-muted-foreground">
                   <Award className="h-3.5 w-3.5 text-amber-500" />
-                  Issued by HACA — Happily A Career Academy
+                  Issued by HACA — Harisandco Academy
                 </div>
               </div>
             ) : (
