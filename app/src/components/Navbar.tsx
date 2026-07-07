@@ -1,5 +1,5 @@
-import { useEffect, useRef, useState, useCallback } from 'react'
-import { Menu, Bell, Search, ChevronDown, Pin, CalendarDays, ClipboardList, Video, X, BookOpen, FileText } from 'lucide-react'
+import { useEffect, useRef, useState } from 'react'
+import { Menu, Bell, Search, ChevronDown, Pin, ClipboardList, Video, X, BookOpen, FileText } from 'lucide-react'
 import { Button } from './ui/button'
 import { Avatar, AvatarFallback } from './ui/avatar'
 import {
@@ -215,7 +215,6 @@ interface NavbarProps { onMenuClick: () => void }
 
 export function Navbar({ onMenuClick }: NavbarProps) {
   const { user } = useAuth()
-  const navigate = useNavigate()
   const location = useLocation()
 
   const [notifOpen, setNotifOpen] = useState(false)

@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { MessageSquare, Star, TrendingUp, ShieldCheck, Loader2, ExternalLink } from 'lucide-react'
+import { MessageSquare, Star, TrendingUp, ShieldCheck, ExternalLink } from 'lucide-react'
 import { Skeleton } from '../components/ui/skeleton'
 import api from '../services/api'
 

@@ -294,7 +294,7 @@ export default function ExtraCourseDetail() {
                 </div>
               ) : (
                 <div className="space-y-2">
-                  {course.modules.map((mod, mi) => {
+                  {course.modules.map((mod) => {
                     const isOpen = expanded.has(mod._id)
                     const modDone = mod.lessons.filter(l => l.isComplete).length
                     return (

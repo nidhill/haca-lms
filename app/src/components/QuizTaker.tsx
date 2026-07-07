@@ -70,7 +70,6 @@ export function QuizTaker({ quizId, isComplete, onMarkComplete }: QuizTakerProps
   }
 
   const current = quiz.questions[currentIndex]
-  const isAnswered = answers[currentIndex] !== undefined
   const totalQuestions = quiz.questions.length
 
   const handleSelectOption = (optionId: string) => {

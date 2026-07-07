@@ -55,7 +55,6 @@ export default function Attendance() {
   })
   const counts = { present: 0, absent: 0, late: 0, excused: 0 }
   monthRecords.forEach((r) => counts[r.status]++)
-  const total = monthRecords.length
 
   const cells: (number | null)[] = [...Array(firstDay).fill(null), ...Array.from({ length: daysInMonth }, (_, i) => i + 1)]
   while (cells.length % 7 !== 0) cells.push(null)

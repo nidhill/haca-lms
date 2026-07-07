@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { Video, CalendarDays, Clock, PlayCircle, ExternalLink } from 'lucide-react'
+import { Video, CalendarDays, Clock, PlayCircle } from 'lucide-react'
 import { Skeleton } from '../components/ui/skeleton'
 import api from '../services/api'
 
