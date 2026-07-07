@@ -42,7 +42,13 @@ export default function Attendance() {
   const prevMonth = () => setViewDate(new Date(year, month - 1, 1))
   const nextMonth = () => setViewDate(new Date(year, month + 1, 1))
 
-  // Monthly stats for current view month
+  // All-time stats (matches SHO app calculation)
+  const allCounts = { present: 0, absent: 0, late: 0, excused: 0 }
+  records.forEach((r) => { allCounts[r.status] = (allCounts[r.status] || 0) + 1 })
+  const allTotal = records.length
+  const overallPercent = allTotal > 0 ? Math.round(((allCounts.present + allCounts.late) / allTotal) * 100) : 0
+
+  // Monthly stats for current calendar view
   const monthRecords = records.filter((r) => {
     const d = new Date(r.date)
     return d.getFullYear() === year && d.getMonth() === month
@@ -50,7 +56,7 @@ export default function Attendance() {
   const counts = { present: 0, absent: 0, late: 0, excused: 0 }
   monthRecords.forEach((r) => counts[r.status]++)
   const total = monthRecords.length
-  const attendancePercent = total > 0 ? Math.round(((counts.present + counts.late) / total) * 100) : 0
+  const monthPercent = total > 0 ? Math.round(((counts.present + counts.late) / total) * 100) : 0
 
   const cells: (number | null)[] = [...Array(firstDay).fill(null), ...Array.from({ length: daysInMonth }, (_, i) => i + 1)]
   while (cells.length % 7 !== 0) cells.push(null)
@@ -74,7 +80,21 @@ export default function Attendance() {
         <p className="text-sm text-muted-foreground">Read-only — marked by your SHO</p>
       </div>
 
-      {/* Summary stats */}
+      {/* Overall attendance — matches SHO app calculation */}
+      <Card>
+        <CardContent className="flex items-center justify-between p-5">
+          <div>
+            <p className="text-sm text-muted-foreground">Overall Attendance</p>
+            <p className="text-3xl font-bold text-green-600">{overallPercent}%</p>
+          </div>
+          <div className="text-right">
+            <p className="text-sm text-muted-foreground">{allCounts.present + allCounts.late} attended</p>
+            <p className="text-sm text-muted-foreground">out of {allTotal} days</p>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Monthly breakdown for current calendar view */}
       <div className="grid gap-4 grid-cols-2 sm:grid-cols-4">
         {(Object.entries(counts) as [AttendanceStatus, number][]).map(([status, count]) => (
           <Card key={status}>
@@ -82,24 +102,27 @@ export default function Attendance() {
               <div className={`mx-auto mb-2 h-3 w-3 rounded-full ${STATUS_CONFIG[status].dot}`} />
               <p className="text-xl font-bold">{count}</p>
               <p className="text-xs text-muted-foreground">{STATUS_CONFIG[status].label}</p>
+              <p className="text-[10px] text-muted-foreground mt-0.5">this month</p>
             </CardContent>
           </Card>
         ))}
       </div>
 
-      {/* Monthly attendance % */}
-      <Card>
-        <CardContent className="flex items-center justify-between p-5">
-          <div>
-            <p className="text-sm text-muted-foreground">Attendance this month</p>
-            <p className="text-3xl font-bold text-green-600">{attendancePercent}%</p>
-          </div>
-          <div className="text-right">
-            <p className="text-sm text-muted-foreground">{counts.present + counts.late} attended</p>
-            <p className="text-sm text-muted-foreground">out of {total} days</p>
-          </div>
-        </CardContent>
-      </Card>
+      {/* This month % */}
+      {total > 0 && (
+        <Card>
+          <CardContent className="flex items-center justify-between p-5">
+            <div>
+              <p className="text-sm text-muted-foreground">This month</p>
+              <p className="text-2xl font-bold text-violet-600">{monthPercent}%</p>
+            </div>
+            <div className="text-right">
+              <p className="text-sm text-muted-foreground">{counts.present + counts.late} attended</p>
+              <p className="text-sm text-muted-foreground">out of {total} days</p>
+            </div>
+          </CardContent>
+        </Card>
+      )}
 
       {/* Calendar */}
       <Card>
