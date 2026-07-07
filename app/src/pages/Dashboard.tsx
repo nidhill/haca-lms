@@ -207,7 +207,7 @@ export default function Dashboard() {
         />
         <StatCard
           label="Attendance" value={`${stats?.attendancePercent ?? 0}%`}
-          sub="This month"
+          sub="All time"
           icon={CalendarDays} gradient="bg-gradient-to-br from-violet-50 to-white" iconColor="text-violet-600"
         />
         <StatCard
